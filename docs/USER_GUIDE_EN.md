@@ -35,14 +35,15 @@ The app lets you reproduce these kinds of tests on a small scale and see the mec
 
 ---
 
-## 3. Quick start (2 minutes)
+## 3. Quick start (1 minute): the 🎤 Quick demo tab
 
 1. Open the app link. If it says the Space is "sleeping", wait about a minute for it to wake up.
-2. **Tab 1:** keep the defaults and click **Run audit**. Read the 🧾 **Summary** box.
-3. Scroll down and click **Run shortlist**.
-4. **Tab 2:** click **Train and evaluate**, then **Compare all fixes**. Read both summaries.
+2. Stay on the first tab, **🎤 Quick demo**. Pick a job and click **▶ Run bias check**.
+3. You get a **scorecard of 6 cards**, one per perspective: 🌏 ethnicity, ⚧ gender, 🎂 age, 👶 career break, ♿ disability, and 🧠 learning from biased history. Each card is 🟢 no clear bias, 🟡 some bias, or 🔴 clear bias, and names who was favoured and who was disadvantaged.
+4. The bar chart shows how much changing **one** detail moved the AI's score, as a percentage of the score difference between a strong and an average candidate (10% and 30% lines mark 🟡 and 🔴).
+5. A short **"What to say"** script appears underneath for presentations.
 
-The first run in Tab 1 takes about 20 seconds because the AI model loads once.
+The Quick demo uses the free embedding screener, so it needs no token and gives the same result every time. The first run takes about 20 seconds while the model loads. For more control (other models, repeats, shortlist, position test, fairness fixes), use the **advanced** tabs described below.
 
 ---
 
@@ -147,6 +148,8 @@ For name tests, the summary also separates the **ethnicity effect** from the **g
 ---
 
 ## 7. Suggested 60-second classroom demo
+
+**Easiest:** use the 🎤 Quick demo tab: pick **Software Engineer**, click **▶ Run bias check**, and read the "What to say" script. For a longer demo:
 
 1. Tab 1, **Software Engineer**, attribute **Name**, embedding screener, then **Run audit**: "Same CV, only the name changes."
 2. **Run shortlist** at 25%: "Small score gaps become big selection gaps. Here is the four-fifths check."

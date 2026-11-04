@@ -13,6 +13,7 @@ import gradio as gr
 
 import history_sim
 import scorers
+import quick_demo
 import verdicts
 from cv_data import CV_TEMPLATES, JOBS, NAMES
 from variants import ATTRIBUTES, build_attribute_variants, build_pool, fill
@@ -299,7 +300,23 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
         "*All data is synthetic. Built for the IS5113 AI Ethics project, CityU.*"
     )
 
-    with gr.Tab("1 · Name-swap audit"):
+    with gr.Tab("🎤 Quick demo"):
+        gr.Markdown(
+            "### One click: does the AI treat identical CVs the same?\n"
+            "Pick a job and press the button. The app tests **6 perspectives** at once "
+            "(ethnicity, gender, age, career break, disability, and learning from biased history) "
+            "and shows a simple scorecard. Same result every time, no token needed."
+        )
+        with gr.Row():
+            q_job = gr.Dropdown(list(JOBS), value="Software Engineer (fintech)", label="Job", scale=3)
+            q_btn = gr.Button("▶ Run bias check", variant="primary", size="lg", scale=1)
+        q_head = gr.Markdown()
+        q_cards = gr.HTML()
+        q_plot = gr.Plot(show_label=False)
+        q_script = gr.Markdown()
+        q_btn.click(lambda j: quick_demo.run_scorecard(j, JOBS[j]), q_job, [q_head, q_cards, q_plot, q_script])
+
+    with gr.Tab("1 · Name-swap audit (advanced)"):
         with gr.Row():
             with gr.Column(scale=1):
                 job = gr.Dropdown(list(JOBS), value=list(JOBS)[0], label="Job")
@@ -346,7 +363,7 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
         pos_out = gr.Markdown()
         pos_btn.click(run_position_test, [job, job_text, name_a, name_b, pairs, model], pos_out)
 
-    with gr.Tab("2 · Learning bias from history"):
+    with gr.Tab("2 · Learning bias from history (advanced)"):
         gr.Markdown(
             "A simulated company has 6,000 past applicants. Skills and experience are distributed **equally** "
             "across groups, but past recruiters marked down women and people aged 40+. "

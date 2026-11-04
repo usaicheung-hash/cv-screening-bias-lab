@@ -149,7 +149,7 @@ Quick demo 使用免費的語義相似度篩選工具，不需要權杖，每次
 
 ## 7. 建議的 60 秒課堂示範
 
-**最簡單：** 使用 🎤 Quick demo 分頁：選 **Software Engineer**，按 **▶ Run bias check**，然後照「What to say」講稿講解。如需較長的示範：
+**最簡單：** 使用 🎤 Quick demo 分頁：選 **Marketing Executive**，按 **▶ Run bias check**，然後照「What to say」講稿講解。如需較長的示範：
 
 1. 分頁 1，選 **Software Engineer**，特徵選 **Name**，用語義相似度，按 **Run audit**：「同一份履歷，只改了名字。」
 2. 以 25% 按 **Run shortlist**：「細小的分數差距，變成很大的入選差距。這是五分之四規則的檢查。」

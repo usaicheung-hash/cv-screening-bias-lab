@@ -308,7 +308,7 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
             "and shows a simple scorecard. Same result every time, no token needed."
         )
         with gr.Row():
-            q_job = gr.Dropdown(list(JOBS), value="Software Engineer (fintech)", label="Job", scale=3)
+            q_job = gr.Dropdown(list(JOBS), value="Marketing Executive (consumer brand)", label="Job", scale=3)
             q_btn = gr.Button("▶ Run bias check", variant="primary", size="lg", scale=1)
         q_head = gr.Markdown()
         q_cards = gr.HTML()

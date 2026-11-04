@@ -149,7 +149,7 @@ For name tests, the summary also separates the **ethnicity effect** from the **g
 
 ## 7. Suggested 60-second classroom demo
 
-**Easiest:** use the 🎤 Quick demo tab: pick **Software Engineer**, click **▶ Run bias check**, and read the "What to say" script. For a longer demo:
+**Easiest:** use the 🎤 Quick demo tab: pick **Marketing Executive**, click **▶ Run bias check**, and read the "What to say" script. For a longer demo:
 
 1. Tab 1, **Software Engineer**, attribute **Name**, embedding screener, then **Run audit**: "Same CV, only the name changes."
 2. **Run shortlist** at 25%: "Small score gaps become big selection gaps. Here is the four-fifths check."

@@ -220,8 +220,9 @@ def _insights(results, hs, strong, average):
 
 
 def _size_words(r: float) -> str:
-    for limit, words in ((0.15, "about a tenth of"), (0.3, "about a quarter of"), (0.42, "about a third of"),
-                         (0.65, "about half of"), (0.9, "nearly as big as"), (1.1, "as big as")):
+    for limit, words in ((0.15, "about a tenth of"), (0.29, "about a quarter of"), (0.38, "about a third of"),
+                         (0.46, "about two-fifths of"), (0.6, "about half of"), (0.9, "nearly as big as"),
+                         (1.1, "as big as")):
         if r < limit:
             return words
     return "bigger than"

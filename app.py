@@ -312,12 +312,13 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
             q_btn = gr.Button("▶ Run bias check", variant="primary", size="lg", scale=1)
         q_head = gr.Markdown()
         q_cards = gr.HTML()
+        q_insights = gr.Markdown()
         q_plot = gr.Plot(show_label=False)
         q_hist_md = gr.Markdown()
         q_hist_plot = gr.Plot(show_label=False)
         q_script = gr.Markdown()
         q_btn.click(lambda j: quick_demo.run_scorecard(j, JOBS[j]), q_job,
-                    [q_head, q_cards, q_plot, q_hist_md, q_hist_plot, q_script])
+                    [q_head, q_cards, q_insights, q_plot, q_hist_md, q_hist_plot, q_script])
 
     with gr.Tab("1 · Name-swap audit (advanced)"):
         with gr.Row():

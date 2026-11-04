@@ -39,10 +39,11 @@ The app lets you reproduce these kinds of tests on a small scale and see the mec
 
 1. Open the app link. If it says the Space is "sleeping", wait about a minute for it to wake up.
 2. Stay on the first tab, **🎤 Quick demo**. Pick a job and click **▶ Run bias check**.
-3. You get a **scorecard of 6 cards**, one per perspective: 🌏 ethnicity, ⚧ gender, 🎂 age, 👶 career break, ♿ disability, and 🧠 learning from biased history. Each card is 🟢 no clear bias, 🟡 some bias, or 🔴 clear bias, and names who was favoured and who was disadvantaged.
-4. The bar chart shows how much changing **one** detail moved the AI's score, as a percentage of the score difference between a strong and an average candidate (10% and 30% lines mark 🟡 and 🔴).
-5. **🧠 Detail chart for "learning from biased history":** chart ① compares the selection rate of women (vs men) and over-40s (vs under-40s) for the biased past recruiters (grey) and the AI trained on their decisions (red), against the 80% rule and the 100% "equal" line. Chart ② shows what the AI learned to rely on: the red bars, **career gap** and **graduation year**, are proxies that stand in for gender and age even though the AI never saw them.
-6. A short **"What to say"** script appears underneath for presentations.
+3. You get a **scorecard of 6 cards**, one per perspective: 🌏 ethnicity, ⚧ gender, 🎂 age, 👶 career break, ♿ disability, and 🧠 learning from biased history. Each card shows the AI's **actual scores (0-100)** for the favoured and the disadvantaged version of the same CV, and the **gap in points**. The colour is 🟢 no clear bias, 🟡 some bias or 🔴 clear bias.
+4. **💡 What this shows:** right under the cards, the app writes the insight in plain sentences, for example "the same CV scored 62.3 with *Graduated 2019* but 54.3 with *Graduated 1996*, a gap of 8.0 points".
+5. The bar chart shows **how many points** changing one detail cost. A grey bar shows the gap between a strong and an average CV, so the audience can judge how big each gap is. (Colours: a gap under a tenth of the grey bar is 🟢, under three-tenths is 🟡, larger is 🔴.)
+6. **🧠 Detail for "learning from biased history":** chart ① shows the AI's average score for **equally qualified** men, women, under-40s and over-40s (for example men 69, women 57). Chart ② shows what the AI learned to rely on: the red bars, **career gap** and **graduation year**, are clues that stand in for gender and age even though the AI never saw them.
+7. A short **"What to say"** script appears underneath for presentations.
 
 The Quick demo uses the free embedding screener, so it needs no token and gives the same result every time. The first run takes about 20 seconds while the model loads. For more control (other models, repeats, shortlist, position test, fairness fixes), use the **advanced** tabs described below.
 

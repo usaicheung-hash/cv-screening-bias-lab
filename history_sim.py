@@ -154,3 +154,16 @@ def compare_all(gender_bias: float, age_bias: float, seed: int = 7) -> pd.DataFr
         _, _, s, _ = run(gender_bias, age_bias, m, seed)
         rows.append({"mitigation": m, **s})
     return pd.DataFrame(rows)
+
+
+def blind_ai_scores(gender_bias: float = 1.0, age_bias: float = 1.0, seed: int = 7):
+    """The same 'blind' model as run(..., MITIGATIONS[0]), returning each test applicant's
+    AI score (predicted chance of being hired, 0-100) plus the model's feature weights."""
+    df = simulate(gender_bias=gender_bias, age_bias=age_bias, seed=seed)
+    train, test = train_test_split(df, test_size=0.4, random_state=seed, stratify=df["hired_historically"])
+    test = test.reset_index(drop=True)
+    scaler = StandardScaler().fit(train[ALL_FEATURES])
+    model = LogisticRegression(max_iter=1000).fit(scaler.transform(train[ALL_FEATURES]), train["hired_historically"])
+    test["ai_score"] = model.predict_proba(scaler.transform(test[ALL_FEATURES]))[:, 1] * 100
+    coefs = pd.DataFrame({"feature": ALL_FEATURES, "weight": model.coef_[0]})
+    return test, coefs

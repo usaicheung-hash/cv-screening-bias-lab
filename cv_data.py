@@ -9,39 +9,43 @@ CV templates contain placeholders that variants.py fills in:
 """
 
 JOBS = {
-    "Data Analyst (bank, Hong Kong)": """Data Analyst - Retail Banking, Hong Kong
+    "Data Analyst (bank, Hong Kong)": """Data Analyst - Retail Banking
+Location: Hong Kong (Kwun Tong office)
 We are looking for a Data Analyst to join our retail banking analytics team.
 Responsibilities: build dashboards in Power BI or Tableau; write SQL queries on large customer
-datasets; analyse customer behaviour and product performance; present findings to business
+datasets; analyse customer behaviour and product performance; present findings to local business
 stakeholders; support A/B testing of digital banking features.
 Requirements: degree in statistics, computer science, business analytics or related field;
-2+ years of experience in data analysis; strong SQL and Python (pandas); good communication
-skills in English and Cantonese; experience in financial services is a plus.""",
+2+ years of experience in data analysis; strong SQL and Python (pandas); fluent spoken Cantonese and English, and good written Chinese (Traditional; Mandarin is a plus);
+experience in Hong Kong financial services is a plus.""",
 
-    "Software Engineer (fintech)": """Software Engineer - Payments Platform
-Join our engineering team building a high-volume payments platform.
+    "Software Engineer (fintech, Hong Kong)": """Software Engineer - Payments Platform
+Location: Hong Kong (Cyberport office)
+Join our engineering team building a high-volume payments platform for Hong Kong merchants.
 Responsibilities: design and build backend services in Java or Python; develop REST APIs;
 write automated tests; work with cloud infrastructure (AWS); participate in code reviews and
-on-call rotation.
+on-call rotation; work with local product and operations teams.
 Requirements: degree in computer science or engineering; 3+ years of backend development
 experience; knowledge of SQL and NoSQL databases; experience with Docker and CI/CD;
-strong problem-solving skills; fintech experience preferred.""",
+strong problem-solving skills; fluent spoken Cantonese and English, and good written Chinese (Traditional; Mandarin is a plus); fintech experience preferred.""",
 
-    "HR Officer (retail group)": """HR Officer - Talent Acquisition, Retail Group
+    "HR Officer (retail group, Hong Kong)": """HR Officer - Talent Acquisition, Retail Group
+Location: Hong Kong (Causeway Bay head office, visits to stores across Hong Kong)
 Responsibilities: manage end-to-end recruitment for store and office roles; screen CVs and
 coordinate interviews; organise onboarding; maintain HR records in Workday; support employee
 engagement activities; ensure compliance with Hong Kong employment ordinances.
 Requirements: degree in human resource management or business; 2+ years of HR or recruitment
-experience; strong interpersonal and organisational skills; fluent English and Cantonese;
+experience; strong interpersonal and organisational skills; fluent spoken Cantonese and English, and good written Chinese (Traditional; Mandarin is a plus);
 knowledge of Hong Kong labour law.""",
 
-    "Marketing Executive (consumer brand)": """Marketing Executive - Consumer Brand
-Responsibilities: plan and run digital marketing campaigns on social media; manage content
-calendar; analyse campaign performance with Google Analytics; coordinate with agencies and
-KOLs; support product launches and events.
+    "Marketing Executive (consumer brand, Hong Kong)": """Marketing Executive - Consumer Brand
+Location: Hong Kong (Quarry Bay office)
+Responsibilities: plan and run digital marketing campaigns on social media for the Hong Kong market;
+manage content calendar; analyse campaign performance with Google Analytics; coordinate with
+local agencies and KOLs; support product launches and events.
 Requirements: degree in marketing, communications or business; 2+ years of marketing
 experience; creative writing skills; experience with Meta Ads and Google Ads; data-driven
-mindset; fluent English and Chinese.""",
+mindset; fluent spoken Cantonese and English, and good written Chinese (Traditional; Mandarin is a plus).""",
 }
 
 # Each CV is a reasonable fit for the job with the same key. "strength" is only a label
@@ -64,7 +68,7 @@ Business Analyst Intern, Kowloon Retail Bank (6 months)
 {GAP_LINE}
 SKILLS
 SQL, Python (pandas, scikit-learn), Power BI, Tableau, Excel, statistics
-Languages: English (fluent), Cantonese (native), Mandarin (good)
+Languages: English (fluent), Cantonese (native), written Chinese (fluent), Mandarin (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
@@ -81,12 +85,12 @@ Operations Analyst, Pearl Logistics (2 years)
 {GAP_LINE}
 SKILLS
 Excel, basic SQL, basic Python, PowerPoint
-Languages: English (good), Cantonese (native)
+Languages: English (good), Cantonese (native), written Chinese (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
     },
-    "Software Engineer (fintech)": {
+    "Software Engineer (fintech, Hong Kong)": {
         "strong": """{NAME}
 Backend Software Engineer | {NAME_EMAIL}@example.com
 
@@ -103,6 +107,7 @@ Junior Developer, Lantau Tech (1 year)
 {GAP_LINE}
 SKILLS
 Java, Python, Spring Boot, REST, PostgreSQL, MongoDB, Docker, AWS, CI/CD
+Languages: English (fluent), Cantonese (native), written Chinese (fluent), Mandarin (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
@@ -119,11 +124,12 @@ Web Developer, small e-commerce startup (2 years)
 {GAP_LINE}
 SKILLS
 PHP, JavaScript, Python (basic), MySQL, Git
+Languages: English (good), Cantonese (native), written Chinese (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
     },
-    "HR Officer (retail group)": {
+    "HR Officer (retail group, Hong Kong)": {
         "strong": """{NAME}
 HR Officer | {NAME_EMAIL}@example.com
 
@@ -139,7 +145,7 @@ HR Assistant, Peak Hotels (1 year)
 {GAP_LINE}
 SKILLS
 Recruitment, onboarding, Workday HRIS, employee engagement, Hong Kong labour law
-Languages: English (fluent), Cantonese (native)
+Languages: English (fluent), Cantonese (native), written Chinese (fluent), Mandarin (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
@@ -155,12 +161,12 @@ Office Administrator, trading company (2 years)
 {GAP_LINE}
 SKILLS
 MS Office, scheduling, customer service
-Languages: English (good), Cantonese (native)
+Languages: English (good), Cantonese (native), written Chinese (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
     },
-    "Marketing Executive (consumer brand)": {
+    "Marketing Executive (consumer brand, Hong Kong)": {
         "strong": """{NAME}
 Marketing Executive | {NAME_EMAIL}@example.com
 
@@ -175,6 +181,7 @@ Digital Marketing Executive, Harbour Beverages (3 years)
 {GAP_LINE}
 SKILLS
 Meta Ads, Google Ads, Google Analytics, copywriting (English and Chinese), Canva
+Languages: English (fluent), Cantonese (native), written Chinese (fluent), Mandarin (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",
@@ -190,6 +197,7 @@ Marketing Assistant, local bakery chain (1.5 years)
 {GAP_LINE}
 SKILLS
 Social media, Canva, MS Office
+Languages: English (good), Cantonese (native), written Chinese (good)
 
 ACTIVITIES
 {EXTRA_LINE}""",

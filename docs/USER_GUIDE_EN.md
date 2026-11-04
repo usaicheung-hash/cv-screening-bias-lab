@@ -41,7 +41,8 @@ The app lets you reproduce these kinds of tests on a small scale and see the mec
 2. Stay on the first tab, **🎤 Quick demo**. Pick a job and click **▶ Run bias check**.
 3. You get a **scorecard of 6 cards**, one per perspective: 🌏 ethnicity, ⚧ gender, 🎂 age, 👶 career break, ♿ disability, and 🧠 learning from biased history. Each card is 🟢 no clear bias, 🟡 some bias, or 🔴 clear bias, and names who was favoured and who was disadvantaged.
 4. The bar chart shows how much changing **one** detail moved the AI's score, as a percentage of the score difference between a strong and an average candidate (10% and 30% lines mark 🟡 and 🔴).
-5. A short **"What to say"** script appears underneath for presentations.
+5. **🧠 Detail chart for "learning from biased history":** chart ① compares the selection rate of women (vs men) and over-40s (vs under-40s) for the biased past recruiters (grey) and the AI trained on their decisions (red), against the 80% rule and the 100% "equal" line. Chart ② shows what the AI learned to rely on: the red bars, **career gap** and **graduation year**, are proxies that stand in for gender and age even though the AI never saw them.
+6. A short **"What to say"** script appears underneath for presentations.
 
 The Quick demo uses the free embedding screener, so it needs no token and gives the same result every time. The first run takes about 20 seconds while the model loads. For more control (other models, repeats, shortlist, position test, fairness fixes), use the **advanced** tabs described below.
 
@@ -55,7 +56,7 @@ The app takes one synthetic CV and makes several copies that are **word-for-word
 ### Controls
 | Control | Meaning |
 |---|---|
-| **Job** | One of four Hong Kong-style jobs: Data Analyst (bank), Software Engineer (fintech), HR Officer (retail), Marketing Executive. |
+| **Job** | One of four jobs located in Hong Kong: Data Analyst (bank), Software Engineer (fintech), HR Officer (retail), Marketing Executive. Every job requires fluent Cantonese and English and good written Chinese, and every CV lists matching language skills. |
 | **Job description** | Pre-filled; you can edit it. |
 | **CV quality** | *strong* or *average* version of the CV. |
 | **Attribute to change** | **Name** (24 names: Chinese, Western, South Asian, Filipino; male and female, 3 names each); **Age** (graduated 2019 vs 1996); **Career break** (none, caregiving break, parental break); **Disability mention** (neutral volunteer activity vs Deaf community volunteer, disability leadership award, wheelchair basketball). |

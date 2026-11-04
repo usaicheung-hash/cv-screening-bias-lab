@@ -13,6 +13,7 @@ import html
 
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from scipy import stats
 
 import history_sim
@@ -101,12 +102,86 @@ def run_scorecard(job: str, job_text: str):
                             note=note, test=test))
 
     # --- learning from biased history (independent of the job)
-    metrics, _, summary, history = history_sim.run(1.0, 1.0, history_sim.MITIGATIONS[0])
+    metrics, coefs, summary, history = history_sim.run(1.0, 1.0, history_sim.MITIGATIONS[0])
     ir = summary["min_impact_ratio"]
     worst_row = metrics.reset_index(drop=True).iloc[int(metrics["impact_ratio"].to_numpy().argmin())]
     hist_level = "red" if ir < 0.8 else ("yellow" if ir < 0.9 else "green")
 
-    return _render(job, results, ir, worst_row["group"], hist_level, yard)
+    headline, grid, fig, script = _render(job, results, ir, worst_row["group"], hist_level, yard)
+    hist_md, hist_fig = _history_detail(metrics, coefs, history, summary)
+    return headline, grid, fig, hist_md, hist_fig, script
+
+
+FEATURE_LABEL = {
+    "skill_test": "Skill test score",
+    "years_experience": "Years of experience",
+    "education_level": "Education level",
+    "career_gap": "Career gap (gender proxy)",
+    "grad_year": "Graduation year (age proxy)",
+}
+
+
+def _history_detail(metrics, coefs, history, summary):
+    """Chart + explanation for the 'learning from biased history' card."""
+    m = metrics.set_index("group")
+    h = history.set_index("group")
+    pairs = [("Women vs men", "Female", "Male"), ("Over-40s vs under-40s", "40+", "Under 40")]
+    labels = [p[0] for p in pairs]
+    past = [h.loc[a, "selection_rate"] / h.loc[b, "selection_rate"] for _, a, b in pairs]
+    ai = [m.loc[a, "selection_rate"] / m.loc[b, "selection_rate"] for _, a, b in pairs]
+
+    fig = make_subplots(
+        rows=1, cols=2, column_widths=[0.5, 0.5], horizontal_spacing=0.28,
+        subplot_titles=("① Selection rate vs the favoured group", "② What the AI learned to rely on"),
+    )
+    fig.add_bar(x=labels, y=[v * 100 for v in past], name="Past human recruiters (biased)",
+                marker_color="#a0aec0", text=[f"{v:.0%}" for v in past], textposition="outside", row=1, col=1)
+    fig.add_bar(x=labels, y=[v * 100 for v in ai], name="AI trained on their decisions (never saw gender/age)",
+                marker_color="#e53e3e", text=[f"{v:.0%}" for v in ai], textposition="outside", row=1, col=1)
+    fig.add_hline(y=100, line_color="#38a169", annotation_text="100% = equal",
+                  annotation_position="top left", row=1, col=1)
+    fig.add_hline(y=80, line_dash="dash", line_color="#2d3748", annotation_text="80% rule",
+                  annotation_position="bottom left", row=1, col=1)
+    fig.update_yaxes(title_text="% of the favoured group's rate", range=[0, 118], row=1, col=1)
+
+    c = coefs.copy()
+    c["label"] = c["feature"].map(FEATURE_LABEL)
+    c = c.reindex(c["weight"].abs().sort_values().index)
+    proxy = c["feature"].isin(history_sim.PROXIES)
+    fig.add_bar(y=c["label"], x=c["weight"], orientation="h", showlegend=False,
+                marker_color=["#e53e3e" if p else "#38a169" for p in proxy],
+                text=[f"{w:+.2f}" for w in c["weight"]], textposition="outside", row=1, col=2)
+    fig.add_vline(x=0, line_color="#2d3748", row=1, col=2)
+    wmax = c["weight"].abs().max() * 1.5
+    fig.update_xaxes(range=[-wmax, wmax], title_text="Weight (+ helps, − hurts)", row=1, col=2)
+    fig.update_yaxes(automargin=True, row=1, col=2)
+    fig.update_layout(
+        barmode="group", height=430, margin=dict(l=10, r=20, t=60, b=40),
+        legend=dict(orientation="h", y=-0.18, x=0),
+    )
+
+    ir_f, ir_a = ai
+
+    def verdict(v):
+        return "**fails** the 80% rule" if v < 0.8 else "only just passes the 80% rule, but is still far from equal"
+
+    gap_w = coefs.set_index("feature").loc["career_gap", "weight"]
+    yr_w = coefs.set_index("feature").loc["grad_year", "weight"]
+    md = f"""
+### 🧠 Detail: how a "blind" AI learned bias from history
+We simulated **6,000 past applicants**. Men and women, young and older, had **the same skills on average**.
+But past recruiters marked down women and people over 40. We trained an AI on those past decisions,
+and **removed gender and age** from its data.
+
+- **Chart ①:** grey bars are the biased past recruiters, red bars are the AI. The AI selects **women at {ir_f:.0%}**
+  of the men's rate, which {verdict(ir_f)}, and **over-40s at {ir_a:.0%}** of the under-40s' rate, which {verdict(ir_a)}.
+  A fair process would reach the green 100% line.
+- **Chart ②:** the AI found clues. A **career gap** gets weight **{gap_w:+.2f}** (most gaps belong to women who
+  took caregiving breaks) and **graduation year** gets **{yr_w:+.2f}** (a later year means younger). These red bars
+  are **proxies**: they stand in for gender and age.
+- **Lesson:** deleting the sensitive column does not remove bias. The bias lives in the past decisions the AI copies.
+"""
+    return md, fig
 
 
 # ------------------------------------------------------------------ rendering
@@ -177,7 +252,7 @@ def _render(job, results, ir, ir_group, hist_level, yard):
 ### 🎤 What to say (30 seconds)
 1. "We gave an AI screener the **same CV** many times, changing only **one thing**: the name, the age, a career break, or a disability mention."
 2. "A fair AI would give every copy the same score. Green means it did. Red and yellow mean it **didn't**: changing one detail that has nothing to do with the job moved the score, measured against the gap between a strong and an average candidate."
-3. "The last card shows that even an AI that **never sees gender or age** learns bias from past hiring decisions through clues like career gaps. That is why our framework says: **test every tool before you use it.**"
+3. "The last card, and the detail chart below it, shows that even an AI that **never sees gender or age** learns bias from past hiring decisions through clues like career gaps. That is why our framework says: **test every tool before you use it.**"
 
 *Embedding screener (BAAI/bge-small-en-v1.5), synthetic CVs. Illustrative, not a scientific audit. For details and other models, use the Advanced tabs.*
 """

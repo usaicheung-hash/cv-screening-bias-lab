@@ -1,4 +1,4 @@
-"""Tab 2: a model learns bias from biased past hiring decisions.
+"""Step 3: a model learns bias from biased past hiring decisions.
 
 We simulate a company's last few years of applicants. Each applicant has a true
 (job-relevant) qualification. Past human recruiters hired the qualified ones, but also
@@ -6,7 +6,6 @@ marked down women and people over 40. We then train a "blind" model that never s
 gender or age, and show that it still discriminates through proxies:
   - career_gap  (much more common for women, who more often take caregiving breaks)
   - grad_year   (directly reveals age)
-Finally we apply fixes and show the fairness vs accuracy trade-off.
 All data is synthetic.
 """
 
@@ -18,14 +17,6 @@ from sklearn.preprocessing import StandardScaler
 
 ALL_FEATURES = ["skill_test", "years_experience", "education_level", "career_gap", "grad_year"]
 PROXIES = ["career_gap", "grad_year"]
-
-MITIGATIONS = [
-    "None (blind model: gender and age removed)",
-    "Remove proxy features (career gap, graduation year)",
-    "Fairlearn ThresholdOptimizer: demographic parity",
-    "Fairlearn ExponentiatedGradient: demographic parity",
-    "Fairlearn ThresholdOptimizer: equal opportunity on past labels",
-]
 
 
 def simulate(n: int = 6000, gender_bias: float = 1.0, age_bias: float = 1.0, seed: int = 7) -> pd.DataFrame:
@@ -71,93 +62,8 @@ def simulate(n: int = 6000, gender_bias: float = 1.0, age_bias: float = 1.0, see
     })
 
 
-def _group_metrics(df: pd.DataFrame, pred: np.ndarray, col: str) -> pd.DataFrame:
-    rows = []
-    for g, sub in df.groupby(col):
-        p = pred[sub.index]
-        qualified = sub["truly_qualified"].to_numpy() == 1
-        rows.append({
-            "attribute": col,
-            "group": g,
-            "applicants": len(sub),
-            "selection_rate": p.mean(),
-            # equal opportunity: of the truly qualified, how many get selected?
-            "qualified_selected": p[qualified].mean() if qualified.any() else np.nan,
-        })
-    out = pd.DataFrame(rows)
-    out["impact_ratio"] = out["selection_rate"] / out["selection_rate"].max()
-    return out
-
-
-def run(gender_bias: float, age_bias: float, mitigation: str, seed: int = 7):
-    df = simulate(gender_bias=gender_bias, age_bias=age_bias, seed=seed)
-    train, test = train_test_split(df, test_size=0.4, random_state=seed, stratify=df["hired_historically"])
-    test = test.reset_index(drop=True)
-
-    features = ALL_FEATURES if not mitigation.startswith("Remove proxy") else [
-        f for f in ALL_FEATURES if f not in PROXIES
-    ]
-    scaler = StandardScaler().fit(train[features])
-    Xtr, Xte = scaler.transform(train[features]), scaler.transform(test[features])
-    ytr = train["hired_historically"].to_numpy()
-
-    # The intersection of gender and age is the sensitive feature for mitigation.
-    sens_tr = train["gender"] + " / " + train["age_band"]
-    sens_te = test["gender"] + " / " + test["age_band"]
-
-    base = LogisticRegression(max_iter=1000).fit(Xtr, ytr)
-    coefs = pd.DataFrame({"feature": features, "weight": base.coef_[0]})
-
-    if mitigation.startswith("Fairlearn ThresholdOptimizer"):
-        from fairlearn.postprocessing import ThresholdOptimizer
-
-        # "equal opportunity on past labels" equalises true-positive rates measured against
-        # the BIASED historical decisions: a deliberate trap that shows a fairness metric
-        # is only as good as the labels it is computed on.
-        constraint = "true_positive_rate_parity" if "equal opportunity" in mitigation else "demographic_parity"
-        to = ThresholdOptimizer(
-            estimator=base, constraints=constraint,
-            objective="accuracy_score", prefit=True, predict_method="predict_proba",
-        )
-        to.fit(Xtr, ytr, sensitive_features=sens_tr)
-        pred = np.asarray(to.predict(Xte, sensitive_features=sens_te, random_state=seed))
-    elif mitigation.startswith("Fairlearn ExponentiatedGradient"):
-        from fairlearn.reductions import DemographicParity, ExponentiatedGradient
-
-        eg = ExponentiatedGradient(LogisticRegression(max_iter=1000), constraints=DemographicParity())
-        eg.fit(Xtr, ytr, sensitive_features=sens_tr)
-        pred = np.asarray(eg.predict(Xte, random_state=seed))
-    else:
-        pred = base.predict(Xte)
-
-    metrics = pd.concat([_group_metrics(test, pred, "gender"), _group_metrics(test, pred, "age_band")])
-
-    summary = {
-        "accuracy_vs_past_decisions": float((pred == test["hired_historically"]).mean()),
-        "accuracy_vs_true_qualification": float((pred == test["truly_qualified"]).mean()),
-        "min_impact_ratio": float(metrics["impact_ratio"].min()),
-        "equal_opportunity_gap": float(
-            metrics.groupby("attribute")["qualified_selected"].agg(lambda s: s.max() - s.min()).max()
-        ),
-        "share_selected": float(pred.mean()),
-    }
-    history = pd.concat([
-        _group_metrics(test, test["hired_historically"].to_numpy(), "gender"),
-        _group_metrics(test, test["hired_historically"].to_numpy(), "age_band"),
-    ])
-    return metrics, coefs, summary, history
-
-
-def compare_all(gender_bias: float, age_bias: float, seed: int = 7) -> pd.DataFrame:
-    rows = []
-    for m in MITIGATIONS:
-        _, _, s, _ = run(gender_bias, age_bias, m, seed)
-        rows.append({"mitigation": m, **s})
-    return pd.DataFrame(rows)
-
-
 def blind_ai_scores(gender_bias: float = 1.0, age_bias: float = 1.0, seed: int = 7):
-    """The same 'blind' model as run(..., MITIGATIONS[0]), returning each test applicant's
+    """Train the 'blind' model (no gender, no age) and return each test applicant's
     AI score (predicted chance of being hired, 0-100) plus the model's feature weights."""
     df = simulate(gender_bias=gender_bias, age_bias=age_bias, seed=seed)
     train, test = train_test_split(df, test_size=0.4, random_state=seed, stratify=df["hired_historically"])

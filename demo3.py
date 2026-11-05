@@ -216,6 +216,13 @@ CSS = """
 .d3 .num{display:inline-block;width:26px;height:26px;border-radius:50%;background:#2b6cb0;color:#fff;text-align:center;
   line-height:26px;font-weight:700;margin-right:6px}
 .d3 .mini{display:grid;grid-template-columns:150px 1fr 56px;align-items:center;gap:6px;font-size:13px;margin:4px 0}
+/* Theme B: teal + coral */
+.d3{background:#e6fffa !important;padding:18px !important}
+.d3 .card{background:#ffffff !important;border:2px solid #319795 !important}
+.d3 .label{background:#319795;color:#fff !important;display:inline-block;padding:3px 10px;border-radius:6px}
+.d3 h3{color:#234e52 !important}
+.d3 .key{background:#234e52 !important}.d3 .key b{color:#feb2b2 !important}
+.d3 .hi{background:#c6f6d5 !important;border-color:#2f855a !important}.d3 .lo{background:#fed7d7 !important;border-color:#c53030 !important}
 </style>"""
 
 
@@ -530,7 +537,7 @@ def _bars_card(title, sm, colour_title):
                  f"<div class='bar' style='width:{w:.0f}%;background:{c}'></div><span>{r['mean']:.1f}</span></div>")
     verdict = ("🔴 Clear gap" if sm["clear"] else ("🟢 No gap" if not differ else "🟢 No clear gap (could be chance)"))
     reason = _rep_reason(sm["low"])
-    return (f"<div class='card'><div class='label' style='color:{colour_title} !important'>{title}</div>{bars}"
+    return (f"<div class='card'><div class='label' style='background:{colour_title} !important'>{title}</div>{bars}"
             f"<div style='margin-top:10px;font-size:16px'><b>Gap: {sm['gap']:.1f} points</b> · {verdict}</div>"
             f"<div class='bubble {'lo' if differ else ''}' style='margin-top:10px;"
             f"{'' if differ else 'background:#f7fafc;border:2px solid #a0aec0'}'><b>{'Reason for ' + html.escape(sm['low']['label']) if differ else 'Reason (all copies)'} "

@@ -21,7 +21,7 @@ short_description: Do AI CV screeners treat identical CVs the same?
 
 A teaching demo built for the IS5113 *AI Ethics* group project at City University of Hong Kong (Part 1, Topic 1: *Algorithmic Bias in Hiring Platforms*). **All CVs and data are synthetic.**
 
-![Tab 2 screenshot](docs/screenshot_tab2.png)
+![Step 2: same CV, different score](docs/screenshot_step2.png)
 
 ## What you can do
 
@@ -30,7 +30,7 @@ A teaching demo built for the IS5113 *AI Ethics* group project at City Universit
 | **🎤 Presentation demo** | Four steps for a talk: (1) the Hong Kong job post, standard CV and 10 names; (2) an LLM recruiter scores identical CVs that differ in one detail and explains the highest and lowest score; (3) how a "blind" AI learns bias from history, and why; (4) add your own fairness instruction to the prompt and compare the scores before and after. |
 | **ℹ️ About and ethics** | Background, ethics of the demo and references. |
 
-The earlier Scorecard and advanced tabs (name-swap audit, Fairlearn fixes) were removed from the online app to keep it simple; their code is still in this repository.
+More screenshots: [Step 1](docs/screenshot_step1.png) · [Step 3](docs/screenshot_step3.png) · [Step 4](docs/screenshot_step4.png)
 
 ## Run locally
 
@@ -39,7 +39,7 @@ pip install -r requirements.txt
 python app.py            # open http://127.0.0.1:7860
 ```
 
-The LLM scorer and position test need an environment variable `HF_TOKEN` (a Hugging Face token with "Make calls to Inference Providers" permission). To save results for a report: `python run_experiment.py` (add `--llm` to include the LLM).
+Steps 1 and 3 work offline. Steps 2 and 4 show saved results from `demo_cache.json`; to ask the AI again, set an environment variable `HF_TOKEN` (a Hugging Face token with "Make calls to Inference Providers" permission).
 
 To deploy your own copy on Hugging Face Spaces, see [HOW_TO_DEPLOY.md](HOW_TO_DEPLOY.md). The YAML block at the top of this README is the Space configuration.
 
@@ -47,19 +47,17 @@ To deploy your own copy on Hugging Face Spaces, see [HOW_TO_DEPLOY.md](HOW_TO_DE
 
 | File | Purpose |
 |---|---|
-| `app.py` | Gradio interface |
-| `cv_data.py` | Synthetic job ads, CV templates, names, attribute variants |
-| `variants.py` | Builds CV versions that differ in exactly one attribute |
-| `scorers.py` | Embedding scorer (`BAAI/bge-small-en-v1.5`) and LLM scorer (default `Qwen/Qwen2.5-72B-Instruct`) |
-| `history_sim.py` | Biased-history simulation, model training, Fairlearn fixes |
-| `demo3.py` | Three-step Presentation demo (LLM scores with reasons, cached in `demo_cache.json`) |
-| `quick_demo.py` | One-click scorecard for the Scorecard tab |
-| `verdicts.py` | Rule-based 🧾 Summary verdicts |
-| `run_experiment.py` | Runs everything offline and saves CSVs to `results/` |
+| `app.py` | Gradio interface: 🎤 Presentation demo and ℹ️ About and ethics |
+| `demo3.py` | The four steps: page layout, LLM scoring with reasons, the bias check and the prompt fix |
+| `demo_cache.json` | Saved AI scores, so the presentation shows the same numbers every time |
+| `cv_data.py` | Synthetic Hong Kong job ads, CV templates and the details that change |
+| `variants.py` | Fills a CV template so copies differ in exactly one detail |
+| `scorers.py` | Connects to the AI recruiter (default `Qwen/Qwen2.5-72B-Instruct`) |
+| `history_sim.py` | Step 3: biased-history simulation and the "blind" AI |
 
 ## Limitations and ethics
 
-This is an illustrative experiment, not a scientific audit: few CVs, four jobs, one or two models. Use it as an auditing and teaching tool, not to optimise a CV against a screener. AI tools (Claude) helped write the code and documentation; the project group designed the experiment and interpreted the results.
+This is an illustrative experiment, not a scientific audit: few CVs, four jobs, one model. Use it as an auditing and teaching tool, not to optimise a CV against a screener. AI tools (Claude) helped write the code and documentation; the project group designed the experiment and interpreted the results.
 
 ## Key references
 
@@ -68,6 +66,6 @@ This is an illustrative experiment, not a scientific audit: few CVs, four jobs, 
 - Glazko et al. (2024), *Identifying and Improving Disability Bias in GPT-Based Resume Screening*, FAccT.
 - Rozado (2025), *Gender and Positional Biases in LLM-Based Hiring Decisions*, arXiv:2505.17049.
 - *Mobley v. Workday, Inc.*, N.D. Cal.
-- Bird et al. (2020), *Fairlearn*, Microsoft.
+- ILO (2018), *Care Work and Care Jobs for the Future of Decent Work*.
 
 Licensed under the [MIT License](LICENSE).

@@ -27,13 +27,10 @@ A teaching demo built for the IS5113 *AI Ethics* group project at City Universit
 
 | Tab | Experiment |
 |---|---|
-| **🎤 Presentation demo** | Three steps for a talk: (1) the Hong Kong job post, standard CV and 10 names; (2) an LLM recruiter scores identical CVs that differ in one detail and explains the highest and lowest score; (3) how a "blind" AI learns bias from history, and why. |
-| **📋 Scorecard** | One click: a 6-card bias scorecard with the free embedding screener and a presenter script. No token needed. |
-| **1 · Name-swap audit** | Score copies of one CV that differ in a single attribute (name, graduation year, career break, disability mention) with an embedding matcher or an LLM "recruiter". Includes a shortlist simulation with the four-fifths rule and an LLM position test. |
-| **2 · Learning bias from history** | Train a "blind" model (no gender or age) on biased past hiring decisions, see it learn bias through proxies, and compare five Fairlearn-based fixes. |
-| **3 · About and ethics** | Background, ethics of the demo and references. |
+| **🎤 Presentation demo** | Four steps for a talk: (1) the Hong Kong job post, standard CV and 10 names; (2) an LLM recruiter scores identical CVs that differ in one detail and explains the highest and lowest score; (3) how a "blind" AI learns bias from history, and why; (4) add your own fairness instruction to the prompt and compare the scores before and after. |
+| **ℹ️ About and ethics** | Background, ethics of the demo and references. |
 
-After each run, a **🧾 Summary** box gives a 🟢/🟡/🔴 verdict and explains it in plain English, including the relevant Hong Kong anti-discrimination law.
+The earlier Scorecard and advanced tabs (name-swap audit, Fairlearn fixes) were removed from the online app to keep it simple; their code is still in this repository.
 
 ## Run locally
 

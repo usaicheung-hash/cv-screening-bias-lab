@@ -52,7 +52,13 @@ Results are saved, so the presentation shows the same numbers every time and doe
 
 **Step 3 · How an AI learns bias from history.** Three cards: (1) past recruiters hired 55 of every 100 men but only 25 of every 100 women with the same skills; (2) we train an AI on those decisions and delete gender and age, but career gap and graduation year remain; (3) the AI gives equally qualified women and over-40s about 11 to 13 points less. Below, **"Why does the AI learn the bias?"** explains it in three points with the data: the AI's "right answer" is the past decisions; 55 of every 100 women but only 5 of every 100 men have a career gap; in the past only 27 of every 100 people with a gap were hired, versus 46 without, so the AI learns "career gap = lower score".
 
-## 3b. 📋 Scorecard tab (no AI token needed)
+**Step 4 · Fix it with a better prompt.** A text box holds rules for the AI recruiter, for example "do not consider nationality; judge Cantonese, English and Chinese only from what the CV states; a caregiving break is not a weakness". You can edit it. Pick a test and click **▶ Apply instruction**: the same CVs are scored again with your rules added to the prompt, and the page shows **Before (normal prompt)** and **After (prompt + your instruction)** side by side, with the gap and the AI's reason for the lowest score. The 💡 Result box says whether the clear gap disappeared, stayed, or was never there. The default instruction is pre-computed for Marketing Executive; editing it or clicking **🔄 Run again** asks the AI live (about 1 minute). Lesson: a better prompt can reduce bias, but it is not a guarantee, so the fix must be tested again.
+
+## 3b. Removed tabs (for reference)
+
+> On 5 Nov 2026 the 📋 Scorecard, 1 · Name-swap audit and 2 · Learning bias from history tabs were **removed from the online app** to keep the presentation simple. Their code is still in this repository (`quick_demo.py`, `history_sim.py`, `verdicts.py`, `run_experiment.py`), and sections 3c to 6 below describe them for reference.
+
+## 3c. 📋 Scorecard (removed from the online app)
 
 1. Open the app link. If it says the Space is "sleeping", wait about a minute for it to wake up.
 2. Open the **📋 Scorecard** tab. Pick a job and click **▶ Run bias check**.
@@ -168,7 +174,7 @@ For name tests, the summary also separates the **ethnicity effect** from the **g
 
 ## 7. Suggested 60-second classroom demo
 
-**Easiest:** use the 🎤 Presentation demo tab and walk through Step 1, Step 2 (🌏 Name, then 🎂 Age) and Step 3. For a one-screen summary, use the 📋 Scorecard tab and its "What to say" script. For a longer demo:
+**Easiest:** use the 🎤 Presentation demo tab and walk through Step 1, Step 2 (🌏 Name, then 👶 Career break), Step 3 and Step 4 (👶 Career break: before vs after the instruction). For a longer demo:
 
 1. Tab 1, **Software Engineer**, attribute **Name**, embedding screener, then **Run audit**: "Same CV, only the name changes."
 2. **Run shortlist** at 25%: "Small score gaps become big selection gaps. Here is the four-fifths check."

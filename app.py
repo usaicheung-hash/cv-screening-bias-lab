@@ -321,116 +321,46 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
             with gr.Tab("Step 3 · How an AI learns bias from history"):
                 gr.Markdown("### How an AI learns bias from history, even when we hide gender and age")
                 d_s3 = gr.HTML(demo3.step3_html())
+            with gr.Tab("Step 4 · Fix it with a better prompt"):
+                gr.Markdown("### Can we remove the bias by telling the AI what NOT to judge?\n"
+                            "Write rules for the AI recruiter below (for example: ignore nationality, judge language "
+                            "only from the language skills written on the CV). The same CVs are scored again with "
+                            "your rules added to the prompt, and the result is compared with the normal prompt.")
+                d_fix = gr.Textbox(demo3.DEFAULT_FIX, label="Your instruction to the AI (you can edit it)", lines=4)
+                with gr.Row():
+                    d_fix_test = gr.Radio(demo3.FIX_TESTS, value=demo3.FIX_TESTS[0], label="Test", scale=4)
+                    d_fix_btn = gr.Button("▶ Apply instruction", variant="primary", scale=1)
+                    d_fix_live = gr.Button("🔄 Run again (about 1 minute)", size="sm", scale=1)
+                d_s4 = gr.HTML()
         d_job.change(demo3.step1_html, d_job, d_s1)
         d_job.change(demo3.step2, [d_job, d_test], d_s2)
         d_test.change(demo3.step2, [d_job, d_test], d_s2)
         d_live.click(lambda j, t: demo3.step2(j, t, live=True), [d_job, d_test], d_s2)
         demo.load(demo3.step2, [d_job, d_test], d_s2)
+        d_fix_btn.click(demo3.step4, [d_job, d_fix_test, d_fix], d_s4)
+        d_fix_test.change(demo3.step4, [d_job, d_fix_test, d_fix], d_s4)
+        d_fix_live.click(lambda j, t, i: demo3.step4(j, t, i, live=True), [d_job, d_fix_test, d_fix], d_s4)
+        demo.load(demo3.step4, [d_job, d_fix_test, d_fix], d_s4)
         d_export = gr.Button("export", visible=False)
         d_export_out = gr.Textbox(visible=False)
         d_export.click(demo3.export_cache, None, d_export_out, api_name="export_cache")
         d_pre_job = gr.Textbox(visible=False)
         d_pre = gr.Button("precompute", visible=False)
         d_pre.click(demo3.precompute, d_pre_job, d_export_out, api_name="precompute")
+        d_fix_pre = gr.Button("precompute_fix", visible=False)
+        d_fix_pre_job = gr.Textbox(visible=False)
+        d_fix_pre.click(demo3.precompute_fix, d_fix_pre_job, d_export_out, api_name="precompute_fix")
 
-    with gr.Tab("📋 Scorecard (all tests, no AI token)"):
-        gr.Markdown(
-            "### One click: does the AI treat identical CVs the same?\n"
-            "Pick a job and press the button. The app tests **6 perspectives** at once "
-            "(ethnicity, gender, age, career break, disability, and learning from biased history) "
-            "and shows a simple scorecard. Same result every time, no token needed."
-        )
-        with gr.Row():
-            q_job = gr.Dropdown(list(JOBS), value="Marketing Executive (consumer brand, Hong Kong)", label="Job", scale=3)
-            q_btn = gr.Button("▶ Run bias check", variant="primary", size="lg", scale=1)
-        q_head = gr.Markdown()
-        q_cards = gr.HTML()
-        q_insights = gr.Markdown()
-        q_plot = gr.Plot(show_label=False)
-        q_hist_md = gr.Markdown()
-        q_hist_plot = gr.Plot(show_label=False)
-        q_script = gr.Markdown()
-        q_btn.click(lambda j: quick_demo.run_scorecard(j, JOBS[j]), q_job,
-                    [q_head, q_cards, q_insights, q_plot, q_hist_md, q_hist_plot, q_script])
-
-    with gr.Tab("1 · Name-swap audit (advanced)"):
-        with gr.Row():
-            with gr.Column(scale=1):
-                job = gr.Dropdown(list(JOBS), value=list(JOBS)[0], label="Job")
-                job_text = gr.Textbox(JOBS[list(JOBS)[0]], label="Job description (editable)", lines=8)
-                strength = gr.Radio(["strong", "average"], value="strong", label="CV quality")
-                attribute = gr.Dropdown(ATTRIBUTES, value=ATTRIBUTES[0], label="Attribute to change")
-                scorer = gr.Radio([SCORER_EMBED, SCORER_LLM], value=SCORER_EMBED, label="AI screener")
-                with gr.Accordion("LLM settings", open=False):
-                    model = gr.Textbox(scorers.DEFAULT_LLM, label="Hugging Face model id")
-                    repeats = gr.Slider(1, 10, value=3, step=1, label="Repeats per CV (LLM answers vary)")
-                run_btn = gr.Button("Run audit", variant="primary")
-            with gr.Column(scale=2):
-                plot = gr.Plot()
-                verdict = gr.Markdown()
-                summary = gr.Markdown()
-                table = gr.Dataframe(label="Scores by variant", interactive=False)
-                with gr.Accordion("Show one of the CVs used", open=False):
-                    example = gr.Textbox(lines=18, show_label=False)
-
-        job.change(lambda j: JOBS[j], job, job_text)
-        run_btn.click(run_audit, [job, job_text, strength, attribute, scorer, model, repeats],
-                      [plot, table, summary, example, verdict])
-
-        gr.Markdown("---\n## Shortlist simulation (embedding screener)\n"
-                    "Score a pool of CVs that differ only by name, keep the top X%, and check the four-fifths rule.")
-        with gr.Row():
-            top_pct = gr.Slider(10, 50, value=25, step=5, label="Shortlist the top X% of CVs")
-            sl_btn = gr.Button("Run shortlist", variant="primary")
-        sl_plot = gr.Plot()
-        sl_note = gr.Markdown()
-        sl_table = gr.Dataframe(label="Selection rate by group", interactive=False)
-        with gr.Accordion("Full ranking", open=False):
-            sl_rank = gr.Dataframe(interactive=False)
-        sl_btn.click(run_shortlist, [job, job_text, top_pct], [sl_plot, sl_table, sl_note, sl_rank])
-
-        gr.Markdown("---\n## Position test (LLM)\n"
-                    "Give the LLM two CVs that are identical except for the name, and ask it to pick one. "
-                    "Order is alternated so each name is listed first half the time.")
-        with gr.Row():
-            name_a = gr.Dropdown(ALL_NAMES, value="Chan Tai Man", label="Name A")
-            name_b = gr.Dropdown(ALL_NAMES, value="Priya Sharma", label="Name B")
-            pairs = gr.Slider(2, 30, value=10, step=2, label="Number of comparisons")
-            pos_btn = gr.Button("Run position test", variant="primary")
-        pos_out = gr.Markdown()
-        pos_btn.click(run_position_test, [job, job_text, name_a, name_b, pairs, model], pos_out)
-
-    with gr.Tab("2 · Learning bias from history (advanced)"):
-        gr.Markdown(
-            "A simulated company has 6,000 past applicants. Skills and experience are distributed **equally** "
-            "across groups, but past recruiters marked down women and people aged 40+. "
-            "We train a model on those past decisions **without** gender or age, then measure who it selects."
-        )
-        with gr.Row():
-            with gr.Column(scale=1):
-                gbias = gr.Slider(0, 2, value=1.0, step=0.1, label="Historical bias against women")
-                abias = gr.Slider(0, 2, value=1.0, step=0.1, label="Historical bias against age 40+")
-                mitig = gr.Radio(history_sim.MITIGATIONS, value=history_sim.MITIGATIONS[0], label="Fairness fix")
-                h_btn = gr.Button("Train and evaluate", variant="primary")
-                cmp_btn = gr.Button("Compare all fixes")
-            with gr.Column(scale=2):
-                h_plot = gr.Plot()
-                h_verdict = gr.Markdown()
-                h_text = gr.Markdown()
-        h_coef = gr.Plot()
-        h_table = gr.Dataframe(label="Metrics by group (test set)", interactive=False)
-        gr.Markdown("### All fixes compared (click **Compare all fixes**)\n"
-                    "Each dot is one fix. Right = fairer (impact ratio), up = closer to the past decisions.")
-        cmp_plot = gr.Plot(show_label=False)
-        cmp_verdict = gr.Markdown()
-        cmp_table = gr.Dataframe(interactive=False, show_label=False)
-        h_btn.click(run_history, [gbias, abias, mitig], [h_plot, h_coef, h_text, h_table, h_verdict])
-        cmp_btn.click(run_compare, [gbias, abias], [cmp_plot, cmp_table, cmp_verdict])
-
-    with gr.Tab("3 · About and ethics"):
+    with gr.Tab("ℹ️ About and ethics"):
         gr.Markdown(ABOUT)
 
 demo3.prewarm("Marketing Executive (consumer brand, Hong Kong)")
 
 if __name__ == "__main__":
-    demo.launch(theme=gr.themes.Soft())
+    # The demo pages are designed for a light background: switch off Gradio's dark mode.
+    FORCE_LIGHT = """() => {
+      const light = () => { document.body.classList.remove('dark');
+        document.querySelectorAll('.dark').forEach(e => e.classList.remove('dark')); };
+      light(); new MutationObserver(light).observe(document.body, {attributes: true, subtree: false});
+    }"""
+    demo.launch(theme=gr.themes.Soft(), js=FORCE_LIGHT)

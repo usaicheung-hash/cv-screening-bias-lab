@@ -419,7 +419,7 @@ def step2(job: str, test_label: str, live: bool = False) -> str:
         res = get_results(job, TESTS[test_label], live=live)
     except Exception as e:  # no token, model error, etc.
         return _wrap(f"<div class='card'><b>⚠️ The AI recruiter is not available right now.</b><br>{html.escape(str(e))}"
-                     "<br>Use the Scorecard tab (no AI token needed) or try again in a minute.</div>")
+                     "<br>Please try again in a minute.</div>")
     return step2_html(job, test_label, res)
 
 
@@ -484,7 +484,7 @@ def step3_html() -> str:
  decisions finds clues that stand in for gender and age, and repeats the old unfairness at scale. Fix: check the
  training labels, test outcomes by group, and remove or correct proxy features.</div>
 <p style='font-size:12px;color:#a0aec0;margin-top:8px'>Simulated data: 6,000 past applicants; past recruiters marked down
-women and over-40s. AI = logistic regression without gender or age. See the advanced tab for fixes.</p>""")
+women and over-40s. AI = logistic regression without gender or age.</p>""")
 
 
 def precompute(job: str, live: bool = False) -> str:

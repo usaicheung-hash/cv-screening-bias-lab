@@ -1,7 +1,8 @@
 """CV Screening Bias Lab: a teaching demo for IS5113 (CityU), Part 1 Topic 1.
 
-Tab 1  Name-swap audit: identical CVs that differ in ONE attribute are scored by an AI.
-Tab 2  Learning bias from history: a "blind" model learns bias through proxy features.
+Presentation demo (demo3.py): Step 1 job and CV, Step 2 LLM scores with reasons, Step 3 learning bias from
+history, Step 4 fixing it with a better prompt. The helper functions below belong to the earlier advanced tabs,
+which were removed from the UI but are kept for reference and run_experiment.py.
 Tab 3  About and ethics.
 """
 
@@ -262,18 +263,24 @@ ABOUT = """
 This app was built for the **IS5113 AI Ethics group project (City University of Hong Kong), Part 1, Topic 1:
 Algorithmic Bias in Hiring Platforms**. It turns the findings of recent studies into something you can try yourself.
 
-**Tab 1: Name-swap audit.** We take one CV and change *only one thing*: the name, the graduation year (age),
-a career break, or an activity that reveals a disability. A fair screener should give every version the same score.
-- *Embedding similarity* measures how close the CV text is to the job ad, the way many CV-matching engines work
-  (and the method of Wilson & Caliskan, AIES 2024).
-- *LLM recruiter prompt* asks a chatbot to rate the CV from 0 to 100, as recruiters increasingly do
-  (compare Bloomberg's 2024 GPT test and Glazko et al., FAccT 2024).
-- *Position test* asks the LLM to choose between two identical CVs, to check name and order effects (Rozado, 2025).
+The **🎤 Presentation demo** tells the story in four steps.
 
-**Tab 2: Learning bias from history.** A simulated company trains a model on its past hiring decisions,
-which were biased against women and over-40s. The model is "blind" (gender and age are removed),
-yet it learns the bias through **proxies** (career gaps and graduation year), echoing the employment-gap
-allegations in *Mobley v. Workday*. You can then try fairness fixes from Microsoft's open-source **Fairlearn** library.
+**Step 1: What are we testing?** One Hong Kong job post (fluent Cantonese and English, good written Chinese),
+one standard CV, and copies that differ in *only one thing*: the name, the graduation year (age), a career
+break, or an activity that reveals a disability.
+
+**Step 2: Same CV, different score.** A large language model acts as the recruiter: it rates each copy from
+0 to 100 and gives a reason (compare Bloomberg's 2024 GPT test and Glazko et al., FAccT 2024). Each CV is scored
+3 times; a gap only counts as bias when it is bigger than the AI's own run-to-run variation.
+
+**Step 3: How an AI learns bias from history.** A simulated company trains a model on its past hiring decisions,
+which were biased against women and over-40s. The model is "blind" (gender and age are removed), yet it learns
+the bias through **proxies** (career gaps and graduation year), echoing the employment-gap allegations in
+*Mobley v. Workday*.
+
+**Step 4: Fix it with a better prompt.** Add your own screening rules to the AI's prompt (for example: ignore
+nationality, judge language only from what the CV states) and compare the scores before and after. A better
+prompt can reduce a gap, but it is not a guarantee, so every fix must be tested again.
 
 ### Ethics of this demo
 - **All CVs and data are synthetic.** No real person's information is used.

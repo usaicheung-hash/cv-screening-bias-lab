@@ -27,7 +27,8 @@ A teaching demo built for the IS5113 *AI Ethics* group project at City Universit
 
 | Tab | Experiment |
 |---|---|
-| **🎤 Quick demo** | One click: a 6-card bias scorecard (ethnicity, gender, age, career break, disability, learning from biased history) with a presenter script. Best for presentations. |
+| **🎤 Presentation demo** | Three steps for a talk: (1) the Hong Kong job post, standard CV and 10 names; (2) an LLM recruiter scores identical CVs that differ in one detail and explains the highest and lowest score; (3) how a "blind" AI learns bias from history, and why. |
+| **📋 Scorecard** | One click: a 6-card bias scorecard with the free embedding screener and a presenter script. No token needed. |
 | **1 · Name-swap audit** | Score copies of one CV that differ in a single attribute (name, graduation year, career break, disability mention) with an embedding matcher or an LLM "recruiter". Includes a shortlist simulation with the four-fifths rule and an LLM position test. |
 | **2 · Learning bias from history** | Train a "blind" model (no gender or age) on biased past hiring decisions, see it learn bias through proxies, and compare five Fairlearn-based fixes. |
 | **3 · About and ethics** | Background, ethics of the demo and references. |
@@ -54,7 +55,8 @@ To deploy your own copy on Hugging Face Spaces, see [HOW_TO_DEPLOY.md](HOW_TO_DE
 | `variants.py` | Builds CV versions that differ in exactly one attribute |
 | `scorers.py` | Embedding scorer (`BAAI/bge-small-en-v1.5`) and LLM scorer (default `Qwen/Qwen2.5-72B-Instruct`) |
 | `history_sim.py` | Biased-history simulation, model training, Fairlearn fixes |
-| `quick_demo.py` | One-click scorecard for the Quick demo tab |
+| `demo3.py` | Three-step Presentation demo (LLM scores with reasons, cached in `demo_cache.json`) |
+| `quick_demo.py` | One-click scorecard for the Scorecard tab |
 | `verdicts.py` | Rule-based 🧾 Summary verdicts |
 | `run_experiment.py` | Runs everything offline and saves CSVs to `results/` |
 

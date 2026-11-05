@@ -14,6 +14,7 @@ import gradio as gr
 import history_sim
 import scorers
 import quick_demo
+import demo3
 import verdicts
 from cv_data import CV_TEMPLATES, JOBS, NAMES
 from variants import ATTRIBUTES, build_attribute_variants, build_pool, fill
@@ -300,7 +301,39 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
         "*All data is synthetic. Built for the IS5113 AI Ethics project, CityU.*"
     )
 
-    with gr.Tab("🎤 Quick demo"):
+    DEFAULT_JOB = "Marketing Executive (consumer brand, Hong Kong)"
+
+    with gr.Tab("🎤 Presentation demo"):
+        d_job = gr.Dropdown(list(JOBS), value=DEFAULT_JOB, label="Job")
+        with gr.Tabs():
+            with gr.Tab("Step 1 · What are we testing?"):
+                gr.Markdown("### What are we testing?\nOne Hong Kong job, one standard CV, and copies that differ in "
+                            "**only ONE detail**. A fair recruiter would give every copy the same score.")
+                d_s1 = gr.HTML(demo3.step1_html(DEFAULT_JOB))
+            with gr.Tab("Step 2 · Same CV, different score"):
+                gr.Markdown("### Same CV, one detail changed → different score?\n"
+                            "An AI recruiter (large language model) scores each copy from 0 to 100 and explains why. "
+                            "Pick a test.")
+                with gr.Row():
+                    d_test = gr.Radio(list(demo3.TESTS), value="🌏 Name", label="Test", scale=4)
+                    d_live = gr.Button("🔄 Re-run live (about 1 minute)", size="sm", scale=1)
+                d_s2 = gr.HTML()
+            with gr.Tab("Step 3 · How an AI learns bias from history"):
+                gr.Markdown("### How an AI learns bias from history, even when we hide gender and age")
+                d_s3 = gr.HTML(demo3.step3_html())
+        d_job.change(demo3.step1_html, d_job, d_s1)
+        d_job.change(demo3.step2, [d_job, d_test], d_s2)
+        d_test.change(demo3.step2, [d_job, d_test], d_s2)
+        d_live.click(lambda j, t: demo3.step2(j, t, live=True), [d_job, d_test], d_s2)
+        demo.load(demo3.step2, [d_job, d_test], d_s2)
+        d_export = gr.Button("export", visible=False)
+        d_export_out = gr.Textbox(visible=False)
+        d_export.click(demo3.export_cache, None, d_export_out, api_name="export_cache")
+        d_pre_job = gr.Textbox(visible=False)
+        d_pre = gr.Button("precompute", visible=False)
+        d_pre.click(demo3.precompute, d_pre_job, d_export_out, api_name="precompute")
+
+    with gr.Tab("📋 Scorecard (all tests, no AI token)"):
         gr.Markdown(
             "### One click: does the AI treat identical CVs the same?\n"
             "Pick a job and press the button. The app tests **6 perspectives** at once "
@@ -396,6 +429,8 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
 
     with gr.Tab("3 · About and ethics"):
         gr.Markdown(ABOUT)
+
+demo3.prewarm("Marketing Executive (consumer brand, Hong Kong)")
 
 if __name__ == "__main__":
     demo.launch(theme=gr.themes.Soft())

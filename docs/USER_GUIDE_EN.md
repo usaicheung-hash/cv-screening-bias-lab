@@ -35,17 +35,34 @@ The app lets you reproduce these kinds of tests on a small scale and see the mec
 
 ---
 
-## 3. Quick start (1 minute): the 🎤 Quick demo tab
+## 3. Presentation demo (about 4 minutes): the 🎤 Presentation demo tab
+
+The first tab tells the story in **three steps**. Pick a job at the top (default: Marketing Executive, Hong Kong).
+
+**Step 1 · What are we testing?** Shows the Hong Kong job post (the requirement for fluent Cantonese and English and good written Chinese is highlighted), the standard CV (the yellow parts are the only things that change), and the 10 names used: Hong Kong, British, Black African and Japanese (one man and one woman each), South Asian and Filipino. It also lists the other tests: age (graduated 2019 vs 1996), gender, career break and disability.
+
+**Step 2 · Same CV, different score.** An AI recruiter (the large language model Qwen2.5-72B-Instruct) gives each copy a score from 0 to 100 and a short reason. Pick a test (🌏 Name, 🎂 Age, ⚧ Gender, 👶 Career break, ♿ Disability):
+- the bars show each copy's score (average of 3 runs), highest in green and lowest in red;
+- the box under the bars gives the gap in points, and how much lower a clearly weaker CV scored, for scale;
+- on the right, the AI's own reasons for the **highest** and **lowest** score are shown side by side;
+- the 💡 **Insight** box says in plain words what this means. It checks whether the AI's reason openly mentions the changed detail, or hides it behind reasonable-sounding words. If the gap is within the AI's normal run-to-run variation, it says so honestly.
+- For ⚧ Gender, the box shows the average score of the 5 men and the 5 women, and the two reasons come from the same-background pair with the biggest gap.
+
+Results are saved, so the presentation shows the same numbers every time and does not wait for the model. **🔄 Re-run live** asks the AI again (about 1 minute) and replaces the saved result. Step 2 needs the `HF_TOKEN` Space secret.
+
+**Step 3 · How an AI learns bias from history.** Three cards: (1) past recruiters hired 55 of every 100 men but only 25 of every 100 women with the same skills; (2) we train an AI on those decisions and delete gender and age, but career gap and graduation year remain; (3) the AI gives equally qualified women and over-40s about 11 to 13 points less. Below, **"Why does the AI learn the bias?"** explains it in three points with the data: the AI's "right answer" is the past decisions; 55 of every 100 women but only 5 of every 100 men have a career gap; in the past only 27 of every 100 people with a gap were hired, versus 46 without, so the AI learns "career gap = lower score".
+
+## 3b. 📋 Scorecard tab (no AI token needed)
 
 1. Open the app link. If it says the Space is "sleeping", wait about a minute for it to wake up.
-2. Stay on the first tab, **🎤 Quick demo**. Pick a job and click **▶ Run bias check**.
+2. Open the **📋 Scorecard** tab. Pick a job and click **▶ Run bias check**.
 3. You get a **scorecard of 6 cards**, one per perspective: 🌏 ethnicity, ⚧ gender, 🎂 age, 👶 career break, ♿ disability, and 🧠 learning from biased history. Each card shows the AI's **actual scores (0-100)** for the favoured and the disadvantaged version of the same CV, and the **gap in points**. The colour is 🟢 no clear bias, 🟡 some bias or 🔴 clear bias.
 4. **💡 What this shows:** right under the cards, the app writes the insight in plain sentences, for example "the same CV scored 62.3 with *Graduated 2019* but 54.3 with *Graduated 1996*, a gap of 8.0 points".
 5. The bar chart shows **how many points** changing one detail cost. A grey bar shows the gap between a strong and an average CV, so the audience can judge how big each gap is. (Colours: a gap under a tenth of the grey bar is 🟢, under three-tenths is 🟡, larger is 🔴.)
 6. **🧠 Detail for "learning from biased history":** chart ① shows the AI's average score for **equally qualified** men, women, under-40s and over-40s (for example men 69, women 57). Chart ② shows what the AI learned to rely on: the red bars, **career gap** and **graduation year**, are clues that stand in for gender and age even though the AI never saw them.
 7. A short **"What to say"** script appears underneath for presentations.
 
-The Quick demo uses the free embedding screener, so it needs no token and gives the same result every time. The first run takes about 20 seconds while the model loads. For more control (other models, repeats, shortlist, position test, fairness fixes), use the **advanced** tabs described below.
+The Scorecard uses the free embedding screener, so it needs no token and gives the same result every time. The first run takes about 20 seconds while the model loads. For more control (other models, repeats, shortlist, position test, fairness fixes), use the **advanced** tabs described below.
 
 ---
 
@@ -151,7 +168,7 @@ For name tests, the summary also separates the **ethnicity effect** from the **g
 
 ## 7. Suggested 60-second classroom demo
 
-**Easiest:** use the 🎤 Quick demo tab: pick **Marketing Executive**, click **▶ Run bias check**, and read the "What to say" script. For a longer demo:
+**Easiest:** use the 🎤 Presentation demo tab and walk through Step 1, Step 2 (🌏 Name, then 🎂 Age) and Step 3. For a one-screen summary, use the 📋 Scorecard tab and its "What to say" script. For a longer demo:
 
 1. Tab 1, **Software Engineer**, attribute **Name**, embedding screener, then **Run audit**: "Same CV, only the name changes."
 2. **Run shortlist** at 25%: "Small score gaps become big selection gaps. Here is the four-fifths check."

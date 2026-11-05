@@ -312,7 +312,8 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
     span = max(100 - lo_axis, 1)
     bars = ""
     for r in rows:
-        colour = "#38a169" if r is top else ("#e53e3e" if r is low else "#a0aec0")
+        differ = top["mean"] - low["mean"] >= 0.05
+        colour = "#38a169" if (r is top and differ) else ("#e53e3e" if (r is low and differ) else "#a0aec0")
         w = max(4, (r["mean"] - lo_axis) / span * 100)
         weight = "700" if r in (top, low) else "400"
         tag = f" <span class='tag'>{r['gender'][0]}</span>" if key == "gender" else ""
@@ -321,9 +322,16 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
 
     gap = top["mean"] - low["mean"]
     noise = _noise(rows)
-    clear = gap >= 2 and gap > 2 * noise
+    # Is the gap bigger than the AI's own run-to-run variation? Compare with the standard error of the
+    # difference between the two averages (scores from the highest and lowest copy).
+    sd = lambda r: float(np.std(r["scores"], ddof=1)) if len(r["scores"]) > 1 else 0.0
+    se_diff = np.sqrt((sd(top) ** 2 + sd(low) ** 2) / REPEATS)
+    clear = gap >= 2 and gap > 2 * se_diff
+    same = gap < 0.05
     gap_box = (f"<b>Gap: {gap:.1f} points</b> between {html.escape(top['label'])} and {html.escape(low['label'])}, "
                f"for the <b>same CV</b>.")
+    if same:
+        gap_box = f"<b>No gap:</b> every copy scored {top['mean']:.1f}."
     if key == "gender":
         avg_gap = abs(men - women)
         clear = avg_gap >= 2 and avg_gap > noise
@@ -336,29 +344,44 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
                 if yard and not np.isnan(yard) and yard < rows[0]["mean"] else "")
 
     hi_reason, lo_reason = _rep_reason(top), _rep_reason(low)
-    mentioned = bool(re.search(MENTION[key], lo_reason, re.I)) or (
-        key == "name" and low["label"].split()[0].lower() in lo_reason.lower())
+    mentioned = bool(re.search(MENTION[key], lo_reason, re.I))
     if key == "gender":
         if clear:
             insight = (f"On average {lo_g} scored <b>{avg_gap:.1f} points lower</b> than {hi_g} with exactly the same "
                        f"CV. Compare the two reasons on the right: same facts, different explanation.")
         else:
             insight = (f"On average men and women scored almost the same (gap {avg_gap:.1f} points), so the AI shows "
-                       f"<b>no clear gender bias</b> here. Single names still moved the score (up to {gap:.1f} points "
-                       f"within one background), which shows how sensitive the AI is to the name itself.")
+                       f"<b>no clear gender bias</b> here. The biggest gap between a man and a woman with the same "
+                       f"background was {gap:.1f} points, which is within the AI's normal run-to-run variation.")
+    elif same:
+        insight = (f"Every copy got the <b>same score</b>. On this test the AI treated the CVs equally. That is a "
+                   f"finding too: bias depends on the job, the model and the detail, so every tool must be tested.")
     elif not clear:
-        insight = (f"The scores are close (gap {gap:.1f} points), within the normal run-to-run variation of the AI. "
-                   f"On this test the AI was <b>fairly consistent</b>. That is a finding too: bias depends on the job, "
-                   f"the model and the detail, so every tool must be tested.")
+        insight = (f"The scores are close (gap {gap:.1f} points). The AI's score for the <b>same</b> CV also moves by "
+                   f"a few points from run to run, so this gap <b>could be chance</b>. On this test we found "
+                   f"<b>no clear bias</b>. That is a finding too: bias depends on the job, the model and the detail, "
+                   f"so every tool must be tested.")
     elif mentioned:
-        insight = (f"The two CVs are identical except for the <b>{detail}</b>, yet the scores differ by "
-                   f"<b>{gap:.1f} points</b>. In the lower score's reason the AI <b>openly points to the {detail}</b>, "
-                   f"which has nothing to do with doing the job.")
+        insight = (f"The two CVs are identical except for the <b>{detail}</b>, and the AI scored them "
+                   f"<b>{gap:.1f} points apart</b>{' every time' if se_diff == 0 else ' on average'}. In its reason for the lower score the AI <b>openly uses "
+                   f"the {detail} against the candidate</b>, even though the skills and experience are exactly the "
+                   f"same. A rule learned from people (\"gaps are a risk\") is now applied automatically to every "
+                   f"applicant.")
     else:
         insight = (f"The two CVs are identical except for the <b>{detail}</b>, yet the scores differ by "
                    f"<b>{gap:.1f} points</b>. The AI's reasons <b>never mention the {detail}</b>: it gives other, "
                    f"<b>reasonable-sounding</b> explanations for the same facts. A human reading only the reasons "
                    f"would not notice the bias.")
+
+    if same:
+        bubbles = (f"<div class='bubble' style='background:#f7fafc;border:2px solid #a0aec0'>"
+                   f"<div style='font-weight:800;font-size:15px'>= All copies: {top['mean']:.1f}</div>"
+                   f"“{html.escape(hi_reason)}”</div>")
+    else:
+        bubbles = (f"<div class='bubble hi'><div style='font-weight:800;font-size:15px' class='green'>⬆ "
+                   f"{html.escape(top['label'])}: {top['mean']:.1f}</div>“{html.escape(hi_reason)}”</div>"
+                   f"<div class='bubble lo'><div style='font-weight:800;font-size:15px' class='red'>⬇ "
+                   f"{html.escape(low['label'])}: {low['mean']:.1f}</div>“{html.escape(lo_reason)}”</div>")
 
     return _wrap(f"""
 <div class='row3' style='grid-template-columns:minmax(320px,1fr) minmax(320px,1fr)'>
@@ -368,10 +391,7 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
    {gap_box}{yard_txt}</div>
  </div>
  <div>
-  <div class='bubble hi'><div style='font-weight:800;font-size:15px' class='green'>⬆ {html.escape(top['label'])}: {top['mean']:.1f}</div>
-   “{html.escape(hi_reason)}”</div>
-  <div class='bubble lo'><div style='font-weight:800;font-size:15px' class='red'>⬇ {html.escape(low['label'])}: {low['mean']:.1f}</div>
-   “{html.escape(lo_reason)}”</div>
+  {bubbles}
   <div class='key'>💡 <b>Insight:</b> {insight}</div>
  </div>
 </div>

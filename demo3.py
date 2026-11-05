@@ -365,8 +365,8 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
         insight = (f"The two CVs are identical except for the <b>{detail}</b>, and the AI scored them "
                    f"<b>{gap:.1f} points apart</b>{' every time' if se_diff == 0 else ' on average'}. In its reason for the lower score the AI <b>openly uses "
                    f"the {detail} against the candidate</b>, even though the skills and experience are exactly the "
-                   f"same. A rule learned from people (\"gaps are a risk\") is now applied automatically to every "
-                   f"applicant.")
+                   f"same. Used at scale, the tool would mark down every applicant with a caregiving break, and most "
+                   f"of them are women.")
     else:
         insight = (f"The two CVs are identical except for the <b>{detail}</b>, yet the scores differ by "
                    f"<b>{gap:.1f} points</b>. The AI's reasons <b>never mention the {detail}</b>: it gives other, "

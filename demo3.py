@@ -14,6 +14,7 @@ import json
 import os
 import re
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -25,7 +26,7 @@ from cv_data import AGE_VARIANTS, CV_TEMPLATES, DISABILITY_VARIANTS, GAP_VARIANT
 from variants import fill
 
 REPEATS = 3
-CACHE_FILE = Path(__file__).with_name("demo_cache.json")
+CACHE_FILE = Path(__file__).with_name(os.environ.get("CACHE_FILE", "demo_cache.json"))
 _lock = threading.Lock()
 
 # 10 names, 5 male and 5 female. Four origins have one man and one woman (same-background pairs).
@@ -98,16 +99,20 @@ def export_cache() -> str:
     return json.dumps(_CACHE, ensure_ascii=False, indent=1)
 
 
-def _one_call(job_text: str, cv: str, extra: str = ""):
-    client = scorers._client()
-    reply = scorers._chat(client, scorers.DEFAULT_LLM,
-                          SCORE_REASON_PROMPT.format(job=job_text, cv=cv, extra=_extra(extra)), temperature=0.7, max_tokens=120)
+def _parse(reply: str):
     m = re.search(r"SCORE:\s*(\d{1,3})", reply, re.I) or re.search(r"\b(\d{1,3})\b", reply)
     if not m:
         return None
     r = re.search(r"REASON:\s*(.+)", reply, re.I | re.S)
     reason = (r.group(1) if r else reply).strip().replace("\n", " ")
     return min(100.0, float(m.group(1))), reason[:400]
+
+
+def _one_call(job_text: str, cv: str, extra: str = ""):
+    client = scorers._client()
+    reply = scorers._chat(client, scorers.DEFAULT_LLM,
+                          SCORE_REASON_PROMPT.format(job=job_text, cv=cv, extra=_extra(extra)), temperature=0.7, max_tokens=120)
+    return _parse(reply)
 
 
 def _extra(instruction: str) -> str:
@@ -127,6 +132,13 @@ def _variants(job: str, key: str):
 def _score_all(job_text: str, cvs: list[str], extra: str = "") -> list[list]:
     jobs = [(i, cv) for i, cv in enumerate(cvs) for _ in range(REPEATS)]
     out = [[] for _ in cvs]
+    if scorers.LOCAL:  # free ZeroGPU: all prompts in one GPU batch
+        prompts = [SCORE_REASON_PROMPT.format(job=job_text, cv=cv, extra=_extra(extra)) for _, cv in jobs]
+        for (i, _), reply in zip(jobs, scorers.batch_chat(prompts)):
+            res = _parse(reply)
+            if res:
+                out[i].append(res)
+        return out
     with ThreadPoolExecutor(max_workers=8) as ex:
         for (i, _), res in zip(jobs, ex.map(lambda a: _one_call(job_text, a[1], extra), jobs)):
             if res:
@@ -146,6 +158,7 @@ def get_results(job: str, key: str, live: bool = False, instruction: str = "") -
             res = _CACHE[ck]
         else:
             variants = _variants(job, key)
+            t0 = time.time()
             scored = _score_all(JOBS[job], [v[2] for v in variants], instruction)
             if any(not s for s in scored):
                 raise RuntimeError("The AI model did not answer for every CV. Please try again.")
@@ -154,11 +167,12 @@ def get_results(job: str, key: str, live: bool = False, instruction: str = "") -
                 avg = _score_all(JOBS[job], [fill(CV_TEMPLATES[job]["average"])])[0]
                 _CACHE[yard_key] = {"scores": [s for s, _ in avg]}
             res = {"instruction": instruction, "rows": [{"label": l, "sub": sub, "scores": [s for s, _ in sc], "reasons": [r for _, r in sc]}
-                            for (l, sub, _), sc in zip(variants, scored)]}
+                            for (l, sub, _), sc in zip(variants, scored)],
+                   "seconds": round(time.time() - t0, 1)}
             _CACHE[ck] = res
             _save_cache()
         yard = float(np.mean(_CACHE.get(f"{job}|average_cv", {}).get("scores", [np.nan])))
-    return {"rows": res["rows"], "average_cv": yard}
+    return {"rows": res["rows"], "average_cv": yard, "seconds": res.get("seconds")}
 
 
 def prewarm(job: str):
@@ -170,7 +184,7 @@ def prewarm(job: str):
                     get_results(job, key)
                 except Exception:
                     return
-    if os.environ.get("HF_TOKEN"):
+    if os.environ.get("HF_TOKEN") and not scorers.LOCAL:
         threading.Thread(target=run, daemon=True).start()
 
 
@@ -418,7 +432,8 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
  </div>
 </div>
 <p style='font-size:12px;color:#a0aec0;margin-top:8px'>AI recruiter: {scorers.DEFAULT_LLM} via Hugging Face. Each CV was
-scored {REPEATS} times; the quoted reason is from the run closest to the average. Synthetic CVs, illustrative only.</p>""")
+scored {REPEATS} times; the quoted reason is from the run closest to the average. Synthetic CVs, illustrative only.
+{'' if not res.get('seconds') else '(This test took ' + str(res['seconds']) + ' seconds to score.)'}</p>""")
 
 
 def step2(job: str, test_label: str, live: bool = False) -> str:

@@ -1,0 +1,9 @@
+gradio>=6.0
+huggingface_hub
+scikit-learn
+pandas
+numpy
+spaces
+torch
+transformers
+accelerate

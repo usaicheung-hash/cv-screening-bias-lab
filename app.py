@@ -35,7 +35,9 @@ nationality, judge language only from what the CV states) and compare the scores
 prompt can reduce a gap, but it is not a guarantee, so every fix must be tested again.
 
 ### Ethics of this demo
-- **All CVs and data are synthetic.** No real person's information is used.
+- **All CVs and data are synthetic.** No real person's information is used. The data (the 6,000 simulated
+  past applicants from Step 3, the CV copies and the saved AI scores) is published as a Hugging Face dataset:
+  [edwardwww/cv-screening-bias-lab-data](https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data).
 - This is an **illustrative experiment, not a scientific audit**: few CVs, few models, small samples.
   Results can change between runs and models. A null or reversed result is also a finding.
 - It is designed as an **auditing tool**. It must not be used to find the "best-scoring" name or to optimise

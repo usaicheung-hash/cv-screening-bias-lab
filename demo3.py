@@ -9,6 +9,7 @@ shows the same numbers every time and never waits for the model. "Re-run live" i
 """
 
 import hashlib
+import hmac
 import html
 import json
 import os
@@ -110,6 +111,26 @@ def _one_call(job_text: str, cv: str, extra: str = ""):
     return min(100.0, float(m.group(1))), reason[:400]
 
 
+# ------------------------------------------------------------------ password lock for LLM calls
+# Saved results (demo_cache.json) are free to view. Anything that asks the LLM again (and so spends the
+# owner's Hugging Face credits) needs the password in the Space secret APP_PASSWORD. If the secret is not
+# set, visitors can never trigger a new LLM call. The check runs on the server, so it also protects the API.
+
+class LockedError(RuntimeError):
+    pass
+
+
+LOCKED_MSG = ("🔒 Asking the AI again uses the owner's paid credits, so it needs the owner password "
+              "(box at the top of this tab). The saved results above are free to view.")
+
+
+def password_ok(password: str | None) -> bool:
+    secret = os.environ.get("APP_PASSWORD", "")
+    if not secret or not password:
+        return False
+    return hmac.compare_digest(password.strip().encode("utf-8"), secret.encode("utf-8"))
+
+
 def _extra(instruction: str) -> str:
     instruction = (instruction or "").strip()
     return f"\nIMPORTANT SCREENING RULES FROM THE EMPLOYER:\n{instruction}\n" if instruction else ""
@@ -134,7 +155,8 @@ def _score_all(job_text: str, cvs: list[str], extra: str = "") -> list[list]:
     return out
 
 
-def get_results(job: str, key: str, live: bool = False, instruction: str = "") -> dict:
+def get_results(job: str, key: str, live: bool = False, instruction: str = "",
+                password: str | None = None, _trusted: bool = False) -> dict:
     """Scores for one test (cached). Raises RuntimeError if the LLM is unavailable.
     `instruction` adds employer screening rules to the prompt (Step 4); it gets its own cache entry."""
     instruction = (instruction or "").strip()
@@ -145,6 +167,8 @@ def get_results(job: str, key: str, live: bool = False, instruction: str = "") -
         if not live and ck in _CACHE:
             res = _CACHE[ck]
         else:
+            if not (_trusted or password_ok(password)):
+                raise LockedError(LOCKED_MSG)
             variants = _variants(job, key)
             scored = _score_all(JOBS[job], [v[2] for v in variants], instruction)
             if any(not s for s in scored):
@@ -167,7 +191,7 @@ def prewarm(job: str):
         for key in ("name", "age", "career", "disability"):
             if f"{job}|{key}" not in _CACHE:
                 try:
-                    get_results(job, key)
+                    get_results(job, key, _trusted=True)  # server-side, runs once at start-up
                 except Exception:
                     return
     if os.environ.get("HF_TOKEN"):
@@ -421,9 +445,20 @@ def step2_html(job: str, test_label: str, res: dict) -> str:
 scored {REPEATS} times; the quoted reason is from the run closest to the average. Synthetic CVs, illustrative only.</p>""")
 
 
-def step2(job: str, test_label: str, live: bool = False) -> str:
+def _locked_card() -> str:
+    return _wrap(f"<div class='card'><b>{html.escape(LOCKED_MSG)}</b></div>")
+
+
+def step2(job: str, test_label: str, live: bool = False, password: str = "") -> str:
     try:
-        res = get_results(job, TESTS[test_label], live=live)
+        res = get_results(job, TESTS[test_label], live=live, password=password)
+    except LockedError:
+        if live:  # keep showing the saved result, with a note
+            try:
+                return _locked_card() + step2_html(job, test_label, get_results(job, TESTS[test_label]))
+            except LockedError:
+                pass
+        return _locked_card()
     except Exception as e:  # no token, model error, etc.
         return _wrap(f"<div class='card'><b>⚠️ The AI recruiter is not available right now.</b><br>{html.escape(str(e))}"
                      "<br>Please try again in a minute.</div>")
@@ -494,10 +529,10 @@ def step3_html() -> str:
 women and over-40s. AI = logistic regression without gender or age.</p>""")
 
 
-def precompute(job: str, live: bool = False) -> str:
+def precompute(job: str, password: str = "", live: bool = False) -> str:
     """Score every test for one job (used before a presentation) and return the cache as JSON."""
     for key in ("name", "age", "career", "disability"):
-        get_results(job, key, live=live)
+        get_results(job, key, live=live, password=password)
     return export_cache()
 
 
@@ -544,14 +579,16 @@ def _bars_card(title, sm, colour_title):
             f"({sm['low']['mean']:.1f}):</b><br>“{html.escape(reason)}”</div></div>")
 
 
-def step4(job: str, test_label: str, instruction: str, live: bool = False) -> str:
+def step4(job: str, test_label: str, instruction: str, live: bool = False, password: str = "") -> str:
     key = TESTS[test_label]
     instruction = (instruction or "").strip()
     if not instruction:
         return _wrap("<div class='card'>Please write an instruction for the AI first.</div>")
     try:
-        before = _summary(get_results(job, key)["rows"])
-        after = _summary(get_results(job, key, live=live, instruction=instruction)["rows"])
+        before = _summary(get_results(job, key, password=password)["rows"])
+        after = _summary(get_results(job, key, live=live, instruction=instruction, password=password)["rows"])
+    except LockedError:
+        return _locked_card()
     except Exception as e:
         return _wrap(f"<div class='card'><b>⚠️ The AI recruiter is not available right now.</b><br>"
                      f"{html.escape(str(e))}</div>")
@@ -581,8 +618,8 @@ def step4(job: str, test_label: str, instruction: str, live: bool = False) -> st
 Only the prompt changed. Results are saved; "Run again" asks the AI again (about 1 minute).</p>""")
 
 
-def precompute_fix(job: str, instruction: str = DEFAULT_FIX) -> str:
+def precompute_fix(job: str, instruction: str = DEFAULT_FIX, password: str = "") -> str:
     """Score the Step 4 tests with an instruction (used before a presentation); return the cache JSON."""
     for label in FIX_TESTS:
-        get_results(job, TESTS[label], instruction=instruction)
+        get_results(job, TESTS[label], instruction=instruction, password=password)
     return export_cache()

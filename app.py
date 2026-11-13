@@ -35,7 +35,9 @@ nationality, judge language only from what the CV states) and compare the scores
 prompt can reduce a gap, but it is not a guarantee, so every fix must be tested again.
 
 ### Ethics of this demo
-- **All CVs and data are synthetic.** No real person's information is used.
+- **All CVs and data are synthetic.** No real person's information is used. The data (the 6,000 simulated
+  past applicants from Step 3, the CV copies and the saved AI scores) is published as a Hugging Face dataset:
+  [edwardwww/cv-screening-bias-lab-data](https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data).
 - This is an **illustrative experiment, not a scientific audit**: few CVs, few models, small samples.
   Results can change between runs and models. A null or reversed result is also a finding.
 - It is designed as an **auditing tool**. It must not be used to find the "best-scoring" name or to optimise
@@ -62,7 +64,10 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
     DEFAULT_JOB = "Marketing Executive (consumer brand, Hong Kong)"
 
     with gr.Tab("🎤 Presentation demo"):
-        d_job = gr.Dropdown(list(JOBS), value=DEFAULT_JOB, label="Job")
+        with gr.Row():
+            d_job = gr.Dropdown(list(JOBS), value=DEFAULT_JOB, label="Job", scale=3)
+            d_pw = gr.Textbox(label="🔒 Owner password (only to ask the AI again)", type="password",
+                              placeholder="Not needed to view saved results", scale=2)
         with gr.Tabs():
             with gr.Tab("Step 1 · What are we testing?"):
                 gr.Markdown("### What are we testing?\nOne Hong Kong job, one standard CV, and copies that differ in "
@@ -90,24 +95,19 @@ with gr.Blocks(title="CV Screening Bias Lab") as demo:
                     d_fix_btn = gr.Button("▶ Apply instruction", variant="primary", scale=1)
                     d_fix_live = gr.Button("🔄 Run again (about 1 minute)", size="sm", scale=1)
                 d_s4 = gr.HTML()
-        d_job.change(demo3.step1_html, d_job, d_s1)
-        d_job.change(demo3.step2, [d_job, d_test], d_s2)
-        d_test.change(demo3.step2, [d_job, d_test], d_s2)
-        d_live.click(lambda j, t: demo3.step2(j, t, live=True), [d_job, d_test], d_s2)
-        demo.load(demo3.step2, [d_job, d_test], d_s2)
-        d_fix_btn.click(demo3.step4, [d_job, d_fix_test, d_fix], d_s4)
-        d_fix_test.change(demo3.step4, [d_job, d_fix_test, d_fix], d_s4)
-        d_fix_live.click(lambda j, t, i: demo3.step4(j, t, i, live=True), [d_job, d_fix_test, d_fix], d_s4)
-        demo.load(demo3.step4, [d_job, d_fix_test, d_fix], d_s4)
-        d_export = gr.Button("export", visible=False)
-        d_export_out = gr.Textbox(visible=False)
-        d_export.click(demo3.export_cache, None, d_export_out, api_name="export_cache")
-        d_pre_job = gr.Textbox(visible=False)
-        d_pre = gr.Button("precompute", visible=False)
-        d_pre.click(demo3.precompute, d_pre_job, d_export_out, api_name="precompute")
-        d_fix_pre = gr.Button("precompute_fix", visible=False)
-        d_fix_pre_job = gr.Textbox(visible=False)
-        d_fix_pre.click(demo3.precompute_fix, d_fix_pre_job, d_export_out, api_name="precompute_fix")
+        # Every event is "private": not listed under "Use via API" and not callable from gradio_client.
+        # The password check itself runs on the server (demo3.get_results), so it cannot be skipped.
+        P = dict(api_visibility="private")
+        d_job.change(demo3.step1_html, d_job, d_s1, **P)
+        d_job.change(lambda j, t, pw: demo3.step2(j, t, password=pw), [d_job, d_test, d_pw], d_s2, **P)
+        d_test.change(lambda j, t, pw: demo3.step2(j, t, password=pw), [d_job, d_test, d_pw], d_s2, **P)
+        d_live.click(lambda j, t, pw: demo3.step2(j, t, live=True, password=pw), [d_job, d_test, d_pw], d_s2, **P)
+        demo.load(demo3.step2, [d_job, d_test], d_s2, **P)
+        d_fix_btn.click(lambda j, t, i, pw: demo3.step4(j, t, i, password=pw), [d_job, d_fix_test, d_fix, d_pw], d_s4, **P)
+        d_fix_test.change(lambda j, t, i, pw: demo3.step4(j, t, i, password=pw), [d_job, d_fix_test, d_fix, d_pw], d_s4, **P)
+        d_fix_live.click(lambda j, t, i, pw: demo3.step4(j, t, i, live=True, password=pw),
+                         [d_job, d_fix_test, d_fix, d_pw], d_s4, **P)
+        demo.load(demo3.step4, [d_job, d_fix_test, d_fix], d_s4, **P)
 
     with gr.Tab("ℹ️ About and ethics"):
         gr.Markdown(ABOUT)
@@ -121,4 +121,5 @@ if __name__ == "__main__":
         document.querySelectorAll('.dark').forEach(e => e.classList.remove('dark')); };
       light(); new MutationObserver(light).observe(document.body, {attributes: true, subtree: false});
     }"""
-    demo.launch(theme=gr.themes.Soft(), js=FORCE_LIGHT)
+    # footer_links without "api" hides the "Use via API" link at the bottom of the page.
+    demo.launch(theme=gr.themes.Soft(), js=FORCE_LIGHT, footer_links=["gradio", "settings"])

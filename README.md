@@ -17,6 +17,8 @@ short_description: Do AI CV screeners treat identical CVs the same?
 
 ▶️ **Live demo:** https://huggingface.co/spaces/edwardwww/cv-screening-bias-lab
 
+📊 **Data (synthetic, public):** [edwardwww/cv-screening-bias-lab-data](https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data)
+
 📖 **User guide:** [English](docs/USER_GUIDE_EN.md) · [中文（繁體）](docs/USER_GUIDE_ZH.md)
 
 A teaching demo built for the IS5113 *AI Ethics* group project at City University of Hong Kong (Part 1, Topic 1: *Algorithmic Bias in Hiring Platforms*). **All CVs and data are synthetic.**
@@ -43,6 +45,20 @@ Steps 1 and 3 work offline. Steps 2 and 4 show saved results from `demo_cache.js
 
 To deploy your own copy on Hugging Face Spaces, see [HOW_TO_DEPLOY.md](HOW_TO_DEPLOY.md). The YAML block at the top of this README is the Space configuration.
 
+## Data
+
+Everything the demo uses is published as a public Hugging Face dataset:
+[edwardwww/cv-screening-bias-lab-data](https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data) (subsets `hiring_history`, `cv_variants`, `llm_scores`).
+View it in the browser with the Dataset Viewer, download the CSVs from **Files and versions**, or:
+
+```python
+from datasets import load_dataset
+history = load_dataset("edwardwww/cv-screening-bias-lab-data", "hiring_history", split="train").to_pandas()
+```
+
+See the user guide ([EN](docs/USER_GUIDE_EN.md#5-view-and-download-the-data) · [中文](docs/USER_GUIDE_ZH.md)) for step-by-step instructions.
+The same files are in [`dataset/`](dataset).
+
 ## Files
 
 | File | Purpose |
@@ -54,6 +70,7 @@ To deploy your own copy on Hugging Face Spaces, see [HOW_TO_DEPLOY.md](HOW_TO_DE
 | `variants.py` | Fills a CV template so copies differ in exactly one detail |
 | `scorers.py` | Connects to the AI recruiter (default `Qwen/Qwen2.5-72B-Instruct`) |
 | `history_sim.py` | Step 3: biased-history simulation and the "blind" AI |
+| `dataset/` | The synthetic data published on Hugging Face (dataset card + 3 CSVs) |
 
 ## Limitations and ethics
 

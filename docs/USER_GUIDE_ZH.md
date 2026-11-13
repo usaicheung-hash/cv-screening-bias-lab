@@ -83,7 +83,47 @@ CV Screening Bias Lab 是一個互動教學示範，用來回答兩個問題：
 
 ---
 
-## 5. 自行運行
+## 5. 查看及下載數據
+
+示範用到的所有數據都是虛構的，並已公開為 Hugging Face 數據集：
+**[edwardwww/cv-screening-bias-lab-data](https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data)**。任何人都可以查看或下載，毋須登入。
+
+| 子集（config） | 行數 | 內容 |
+|---|---|---|
+| `hiring_history` | 6,000 | Step 3：模擬的過往求職者及有偏見的人手招聘決定 |
+| `cv_variants` | 80 | Step 1 及 Step 2：4 個職位廣告，以及只相差一個細節的履歷副本 |
+| `llm_scores` | 177 | Step 2 及 Step 4：AI 招聘員已儲存的分數及理由（每份履歷 3 次） |
+
+**在瀏覽器查看：** 打開上面的連結，頁頂的 **Dataset Viewer** 會顯示表格，可在 **Subset** 選擇想看的表。
+可以排序、搜尋，亦可按 **Data Studio** 用 SQL 篩選。（剛上傳後，查看器可能暫時顯示「should be available soon」，稍後重新整理即可。）
+
+**在瀏覽器下載：** 打開 **Files and versions** 分頁，進入 `data/`，按一個 CSV 檔（例如 `hiring_history.csv`），
+再按 **download** 圖示。CSV 檔可以用 Excel 或 Google Sheets 打開。
+
+**用 Python 讀取：**
+```python
+# pip install datasets pandas
+from datasets import load_dataset
+
+history = load_dataset("edwardwww/cv-screening-bias-lab-data", "hiring_history", split="train").to_pandas()
+cvs     = load_dataset("edwardwww/cv-screening-bias-lab-data", "cv_variants",    split="train").to_pandas()
+scores  = load_dataset("edwardwww/cv-screening-bias-lab-data", "llm_scores",     split="train").to_pandas()
+
+print(history.groupby("gender")[["career_gap", "truly_qualified", "hired_historically"]].mean())
+```
+或者直接用 pandas 讀 CSV：
+```python
+import pandas as pd
+url = "https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data/resolve/main/data/hiring_history.csv"
+history = pd.read_csv(url)
+```
+同一批檔案亦放在本 repository 的 [`dataset/`](../dataset) 資料夾，數據集說明
+（[`dataset/README.md`](../dataset/README.md)）解釋每一欄的意思及數據如何生成（seed 7）。
+應用程式本身不會讀取這個數據集：每次啟動時，它都會在記憶體中重新生成 Step 3 的數據。
+
+---
+
+## 6. 自行運行
 
 **在自己的電腦上**
 ```
@@ -91,6 +131,8 @@ pip install -r requirements.txt
 python app.py
 ```
 打開 http://127.0.0.1:7860。Step 1 和 Step 3 毋須連線。Step 2 和 Step 4 會顯示 `demo_cache.json` 內已儲存的結果；如要重新詢問 AI，請把環境變數 `HF_TOKEN` 設為一個具有「Make calls to Inference Providers」權限的 Hugging Face 權杖（token）。
+
+**在公開的 Space 上，** 已儲存的結果可免費查看；但重新詢問 AI（Re-run live、Run again、新的 Step 4 指示）需要擁有者密碼，因為每次都會用到擁有者的額度。
 
 **在 Hugging Face Spaces 部署自己的版本：** 請參閱 [`HOW_TO_DEPLOY.md`](../HOW_TO_DEPLOY.md)。
 
@@ -107,7 +149,7 @@ python app.py
 
 ---
 
-## 6. 限制與倫理
+## 7. 限制與倫理
 
 - **僅作示範，並非科學審計：** 履歷數量少、只有四個職位、一個模型、每份履歷評分 3 次。結果可能因職位、履歷、模型及每次運行而改變。「沒有偏見」的結果同樣是有價值的發現。
 - **只使用虛構數據。** 姓名是香港勞動市場中各族群的常見名字，但不代表任何真實人士。
@@ -117,7 +159,7 @@ python app.py
 
 ---
 
-## 7. 參考資料
+## 8. 參考資料
 
 - Wilson, K. & Caliskan, A. (2024). *Gender, Race, and Intersectional Bias in Resume Screening via Language Model Retrieval*. AAAI/ACM AIES.
 - Bloomberg (2024). *OpenAI's GPT Is a Recruiter's Dream Tool. Tests Show There's Racial Bias.*

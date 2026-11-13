@@ -83,7 +83,48 @@ Results are saved, so the presentation shows the same numbers every time and doe
 
 ---
 
-## 5. Run it yourself
+## 5. View and download the data
+
+All the data behind the demo is synthetic and public as a Hugging Face dataset:
+**[edwardwww/cv-screening-bias-lab-data](https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data)**. Anyone can view or download it; no account is needed.
+
+| Subset (config) | Rows | What it is |
+|---|---|---|
+| `hiring_history` | 6,000 | Step 3: simulated past applicants and the biased human hiring decisions |
+| `cv_variants` | 80 | Steps 1 and 2: the 4 job ads and the CV copies that differ in one detail |
+| `llm_scores` | 177 | Steps 2 and 4: the AI recruiter's saved scores and reasons (3 runs per CV) |
+
+**View it in the browser.** Open the link above. The **Dataset Viewer** at the top shows the table; pick a
+table in the **Subset** box. You can sort columns, search, and click **Data Studio** to filter with SQL.
+(Just after an upload the viewer can say "should be available soon" for a while; reload later.)
+
+**Download in the browser.** Open the **Files and versions** tab, go into `data/`, click a CSV file
+(for example `hiring_history.csv`) and click the **download** icon. The CSVs open in Excel or Google Sheets.
+
+**Load it in Python.**
+```python
+# pip install datasets pandas
+from datasets import load_dataset
+
+history = load_dataset("edwardwww/cv-screening-bias-lab-data", "hiring_history", split="train").to_pandas()
+cvs     = load_dataset("edwardwww/cv-screening-bias-lab-data", "cv_variants",    split="train").to_pandas()
+scores  = load_dataset("edwardwww/cv-screening-bias-lab-data", "llm_scores",     split="train").to_pandas()
+
+print(history.groupby("gender")[["career_gap", "truly_qualified", "hired_historically"]].mean())
+```
+Or read a CSV straight into pandas:
+```python
+import pandas as pd
+url = "https://huggingface.co/datasets/edwardwww/cv-screening-bias-lab-data/resolve/main/data/hiring_history.csv"
+history = pd.read_csv(url)
+```
+The same files are also in this repository under [`dataset/`](../dataset), and the dataset card
+([`dataset/README.md`](../dataset/README.md)) explains every column and how the data was generated (seed 7).
+The app itself does not read this dataset: it re-creates the Step 3 data in memory each time it starts.
+
+---
+
+## 6. Run it yourself
 
 **On your computer**
 ```
@@ -91,6 +132,8 @@ pip install -r requirements.txt
 python app.py
 ```
 Open http://127.0.0.1:7860. Steps 1 and 3 work offline. Steps 2 and 4 show saved results from `demo_cache.json`; to ask the AI again, set an environment variable `HF_TOKEN` to a Hugging Face token with "Make calls to Inference Providers" permission.
+
+**On the public Space,** saved results are free to view, but asking the AI again (Re-run live, Run again, a new Step 4 instruction) needs the owner password, because each call spends the owner's credits.
 
 **Deploy your own copy on Hugging Face Spaces:** see [`HOW_TO_DEPLOY.md`](../HOW_TO_DEPLOY.md).
 
@@ -107,7 +150,7 @@ Open http://127.0.0.1:7860. Steps 1 and 3 work offline. Steps 2 and 4 show saved
 
 ---
 
-## 6. Limitations and ethics
+## 7. Limitations and ethics
 
 - **Illustrative, not a scientific audit:** few CVs, four jobs, one model, 3 runs per CV. Results can change between jobs, CVs, models and runs. A "no bias" result is also a finding.
 - **Synthetic data only.** Names are typical of groups in Hong Kong's labour market but represent no real person.
@@ -117,7 +160,7 @@ Open http://127.0.0.1:7860. Steps 1 and 3 work offline. Steps 2 and 4 show saved
 
 ---
 
-## 7. References
+## 8. References
 
 - Wilson, K. & Caliskan, A. (2024). *Gender, Race, and Intersectional Bias in Resume Screening via Language Model Retrieval*. AAAI/ACM AIES.
 - Bloomberg (2024). *OpenAI's GPT Is a Recruiter's Dream Tool. Tests Show There's Racial Bias.*

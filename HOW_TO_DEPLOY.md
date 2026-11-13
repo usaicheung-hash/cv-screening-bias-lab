@@ -41,6 +41,22 @@ Steps 1 and 3 need nothing. Steps 2 and 4 show the saved results without a token
 
 **Never paste the token into the code, a chat or the report.** Only put it in the Space secret.
 
+### Lock the paid AI calls with a password
+
+Because the Space is public, anyone could press **Re-run live** and spend your credits. The app only lets
+someone ask the AI again (Re-run live, Run again, a new Step 4 instruction, or a job with no saved results)
+if they type the owner password in the **🔒 Owner password** box. Saved results stay free for everyone.
+
+1. In your Space: **Settings > Variables and secrets > New secret**.
+   Name: `APP_PASSWORD`, Value: a password only you know. Save. The Space restarts.
+2. If `APP_PASSWORD` is not set, nobody (not even you) can trigger new AI calls from the page.
+
+The password is checked on the server, and the app's "Use via API" endpoints are switched off, so it
+cannot be skipped by calling the API. **Never put the password in the code, GitHub, a chat or the report.**
+
+To refresh `demo_cache.json` on your own computer, set `HF_TOKEN` and `APP_PASSWORD` in your terminal and run
+`python -c "import demo3; open('demo_cache.json','w',encoding='utf-8').write(demo3.precompute('<job>', password='<your password>'))"`.
+
 ## 4. Run on your own computer (optional)
 
 ```
